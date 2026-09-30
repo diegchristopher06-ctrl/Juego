@@ -1,354 +1,487 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carrera a la Graduación - Juego 3D</title>
-    
-    <!-- Estilos de Tailwind CSS para la interfaz de usuario (HUD) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Iconos de FontAwesome para el HUD y botones -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Fuente tipográfica 'Fredoka' para un estilo divertido de juego -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        /* Aplicamos la fuente Fredoka a todo el documento y evitamos la selección de texto */
-        * {
-            font-family: 'Fredoka', cursive, sans-serif;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        /* Garantizamos que el cuerpo ocupe toda la pantalla sin barras de desplazamiento */
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #0f172a;
-        }
-        /* Contenedor principal del canvas 3D de Three.js */
-        #game-container {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        /* Sombra de texto para mejorar la legibilidad sobre el fondo 3D */
-        .hud-shadow {
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-        }
-        /* Animación suave para los botones al hacer clic o presionar */
-        .btn-bounce {
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-        }
-        .btn-bounce:active {
-            transform: scale(0.95);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrera a la Graduación 3D</title>
+  <!-- Estilos con Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Librería Three.js (Versión Standalone Global) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; background-color: #0f172a; font-family: sans-serif; }
+    canvas { display: block; }
+  </style>
 </head>
-<body class="text-white relative">
+<body class="select-none text-white">
 
-    <!-- Lienzo sobre el cual se renderizará el mundo 3D -->
-    <div id="game-container"></div>
-
-    <!-- Interfaz de Usuario Superpuesta (HUD - Heads Up Display) -->
-    <div id="hud" class="hidden absolute top-0 left-0 w-full p-4 pointer-events-none flex flex-col justify-between h-full z-10">
-        
-        <!-- BARRA SUPERIOR: Nivel, Tiempo, Vidas y Puntuación -->
-        <div class="flex justify-between items-start gap-2 max-w-5xl mx-auto w-full">
-            
-            <!-- Información del Nivel Actual y Tiempo Restante -->
-            <div class="bg-slate-900/80 backdrop-blur border-2 border-indigo-500/50 rounded-2xl p-3 flex items-center gap-4 shadow-xl">
-                <div class="flex flex-col">
-                    <span id="hud-level-title" class="text-xs uppercase tracking-wider text-indigo-300 font-bold">Nivel 1</span>
-                    <span id="hud-level-name" class="text-sm font-bold text-white">Salir del Barrio</span>
-                </div>
-                <div class="h-8 w-px bg-indigo-500/30"></div>
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-clock text-amber-400 text-xl animate-pulse"></i>
-                    <span id="hud-timer" class="text-2xl font-bold text-amber-300 hud-shadow">60s</span>
-                </div>
-            </div>
-
-            <!-- Contador de Vidas y Birretes (Monedas) -->
-            <div class="flex gap-3">
-                <!-- Vidas (Representadas por Birretes rojos/grises) -->
-                <div class="bg-slate-900/80 backdrop-blur border-2 border-red-500/50 rounded-2xl px-4 py-2 flex items-center gap-2 shadow-xl">
-                    <span class="text-xs text-red-300 font-bold uppercase mr-1">Vidas:</span>
-                    <div id="hud-lives" class="flex gap-1 text-2xl text-red-500">
-                        <i class="fa-solid fa-graduation-cap"></i>
-                        <i class="fa-solid fa-graduation-cap"></i>
-                        <i class="fa-solid fa-graduation-cap"></i>
-                    </div>
-                </div>
-
-                <!-- Puntuación (Birretes dorados recolectados) -->
-                <div class="bg-slate-900/80 backdrop-blur border-2 border-yellow-500/50 rounded-2xl px-4 py-2 flex items-center gap-2 shadow-xl">
-                    <i class="fa-solid fa-graduation-cap text-yellow-400 text-2xl"></i>
-                    <span id="hud-score" class="text-2xl font-bold text-yellow-300 hud-shadow">0</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- BARRA INFERIOR: Indicadores de Power-Ups y Barra de Progreso del Nivel -->
-        <div class="max-w-xl mx-auto w-full flex flex-col items-center gap-2 mb-2">
-            
-            <!-- Indicadores Visuales de Power-Ups Activos -->
-            <div id="powerup-status" class="flex gap-3 min-h-[36px]">
-                <!-- Indicador de Escudo Activo -->
-                <div id="status-shield" class="hidden bg-blue-600/90 text-white text-xs px-3 py-1.5 rounded-full border border-blue-300 flex items-center gap-2 shadow-lg animate-bounce">
-                    <i class="fa-solid fa-shield-halved"></i> <span>Tesis Aprobada (Escudo Activo)</span>
-                </div>
-                <!-- Indicador de Boost de Velocidad Activo -->
-                <div id="status-speed" class="hidden bg-amber-500/90 text-white text-xs px-3 py-1.5 rounded-full border border-amber-200 flex items-center gap-2 shadow-lg animate-pulse">
-                    <i class="fa-solid fa-mug-hot"></i> <span>Efecto Café (+Velocidad e Invulnerabilidad)</span>
-                </div>
-            </div>
-
-            <!-- Barra de Progreso de Distancia Recorrida -->
-            <div class="w-full bg-slate-900/90 border-2 border-indigo-400/40 rounded-full p-1 shadow-2xl relative">
-                <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-4 rounded-full w-0 transition-all duration-200"></div>
-                <div class="absolute -top-3 right-0 text-2xl text-yellow-400">🎓</div>
-            </div>
-        </div>
+  <!-- Interfaz de Usuario (HUD) -->
+  <div id="hud" class="absolute top-0 left-0 w-full p-4 flex justify-between items-center z-10 pointer-events-none hidden">
+    <!-- Vidas y Nivel -->
+    <div class="bg-slate-900/80 backdrop-blur border border-slate-700 p-3 rounded-xl flex items-center gap-4">
+      <div>
+        <p class="text-xs text-slate-400 font-bold uppercase">Vidas</p>
+        <div id="lives-container" class="flex gap-1 text-2xl">🎓🎓🎓</div>
+      </div>
+      <div class="border-l border-slate-700 pl-4">
+        <p class="text-xs text-slate-400 font-bold uppercase">Nivel</p>
+        <p id="level-display" class="text-xl font-extrabold text-indigo-400">1</p>
+      </div>
     </div>
 
-    <div id="mobile-controls" class="hidden absolute bottom-4 left-0 w-full px-6 flex justify-between items-end pointer-events-auto z-20 md:hidden">
-        <!-- Botones de Dirección Izquierda y Derecha -->
-        <div class="grid grid-cols-2 gap-2">
-            <button id="btn-left" class="w-14 h-14 bg-indigo-600/80 rounded-2xl text-2xl flex items-center justify-center active:bg-indigo-400 border-2 border-indigo-300 shadow-lg"><i class="fa-solid fa-arrow-left"></i></button>
-            <button id="btn-right" class="w-14 h-14 bg-indigo-600/80 rounded-2xl text-2xl flex items-center justify-center active:bg-indigo-400 border-2 border-indigo-300 shadow-lg"><i class="fa-solid fa-arrow-right"></i></button>
-        </div>
-        <!-- Botones de Acción Saltar y Deslizarse -->
-        <div class="flex flex-col gap-2">
-            <button id="btn-up" class="w-14 h-14 bg-emerald-600/80 rounded-2xl text-2xl flex items-center justify-center active:bg-emerald-400 border-2 border-emerald-300 shadow-lg"><i class="fa-solid fa-arrow-up"></i></button>
-            <button id="btn-down" class="w-14 h-14 bg-amber-600/80 rounded-2xl text-2xl flex items-center justify-center active:bg-amber-400 border-2 border-amber-300 shadow-lg"><i class="fa-solid fa-arrow-down"></i></button>
-        </div>
+    <!-- Progreso del Nivel -->
+    <div class="w-1/3 bg-slate-900/80 backdrop-blur border border-slate-700 p-3 rounded-xl">
+      <div class="flex justify-between text-xs text-slate-400 mb-1 font-bold">
+        <span>CASA</span>
+        <span id="time-display" class="text-yellow-400 font-mono text-sm">60s</span>
+        <span>GRADUACIÓN 🎓</span>
+      </div>
+      <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
+        <div id="progress-bar" class="bg-indigo-500 h-full w-0 transition-all duration-200"></div>
+      </div>
     </div>
 
-    <!-- Pantalla de Inicio / Menú Principal -->
-    <div id="screen-start" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-30">
-        <div class="max-w-md w-full bg-slate-900 border-2 border-indigo-500/40 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-            <div class="text-6xl mb-3">🎓🏃‍♂️💨</div>
-            <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-indigo-300 mb-2">Carrera a la Graduación</h1>
-            <p class="text-slate-300 text-sm mb-6">¡Te quedaste dormido! Corre por las calles y el campus esquivando obstáculos para llegar a tiempo a la ceremonia antes de que expire el tiempo.</p>
-            
-            <!-- Resumen de Controles -->
-            <div class="bg-slate-800/80 p-4 rounded-2xl text-left text-xs text-slate-300 space-y-2 mb-6 border border-slate-700">
-                <p><span class="text-yellow-400 font-bold">⬅️ / ➡️ o A / D:</span> Cambiar de carril</p>
-                <p><span class="text-emerald-400 font-bold">⬆️ o W / Espacio:</span> Saltar (Baches, Conos, Charcos)</p>
-                <p><span class="text-amber-400 font-bold">⬇️ o S:</span> Deslizarse (Letreros de precaución)</p>
-                <p><span class="text-blue-400 font-bold">Power-ups:</span> ☕ Café (Súper velocidad), 🛡️ Tesis (Escudo), ⏰ Reloj (+10s), 🎓 Birrete (Puntos)</p>
-            </div>
-
-            <button id="btn-start" class="w-full py-4 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-950 font-black text-xl rounded-2xl shadow-lg hover:from-yellow-300 hover:to-amber-400 btn-bounce border-2 border-yellow-200">
-                ¡EMPEZAR CARRERA!
-            </button>
-        </div>
+    <!-- Puntaje y Power-Up Activo -->
+    <div class="bg-slate-900/80 backdrop-blur border border-slate-700 p-3 rounded-xl text-right">
+      <p class="text-xs text-slate-400 font-bold uppercase">Puntuación</p>
+      <p id="score-display" class="text-2xl font-black text-amber-400">0</p>
+      <div id="powerup-status" class="text-xs font-bold text-emerald-400 hidden mt-1">
+        ⚡ BOOST ACTIVO
+      </div>
     </div>
+  </div>
 
-    <!-- Pantalla de Game Over -->
-    <div id="screen-gameover" class="hidden absolute inset-0 bg-red-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-30">
-        <div class="max-w-md w-full bg-slate-900 border-2 border-red-500/60 p-8 rounded-3xl shadow-2xl">
-            <div class="text-6xl mb-3">😭📜❌</div>
-            <h2 class="text-3xl font-black text-red-400 mb-1">¡Reprobaste el año!</h2>
-            <p id="gameover-reason" class="text-slate-300 text-sm mb-6">Te quedaste sin vidas o se agotó el tiempo para llegar.</p>
-
-            <button id="btn-retry" class="w-full py-4 bg-gradient-to-r from-red-500 to-rose-600 text-white font-black text-xl rounded-2xl shadow-lg hover:from-red-400 hover:to-rose-500 btn-bounce border-2 border-red-300">
-                REINTENTAR NIVEL
-            </button>
-        </div>
-    </div>
-
-    <!-- Pantalla de Nivel Completado -->
-    <div id="screen-levelcomplete" class="hidden absolute inset-0 bg-indigo-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-30">
-        <div class="max-w-md w-full bg-slate-900 border-2 border-emerald-500/60 p-8 rounded-3xl shadow-2xl">
-            <div class="text-6xl mb-3">🎉🏆✨</div>
-            <h2 class="text-3xl font-black text-emerald-400 mb-1">¡Nivel Completado!</h2>
-            <p class="text-slate-300 text-sm mb-4">Llegaste a tiempo al siguiente sector de la carrera.</p>
-
-            <div class="bg-slate-800 p-4 rounded-2xl text-sm mb-6 space-y-1">
-                <div class="flex justify-between text-slate-300"><span>Birretes recolectados:</span> <span id="complete-score" class="text-yellow-400 font-bold">0</span></div>
-                <div class="flex justify-between text-slate-300"><span>Tiempo restante:</span> <span id="complete-time" class="text-emerald-400 font-bold">0s</span></div>
-            </div>
-
-            <button id="btn-nextlevel" class="w-full py-4 bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-xl rounded-2xl shadow-lg hover:from-emerald-300 hover:to-teal-400 btn-bounce border-2 border-emerald-200">
-                SIGUIENTE NIVEL ➡️
-            </button>
-        </div>
-    </div>
-
-    <!-- Pantalla de Victoria Final -->
-    <div id="screen-victory" class="hidden absolute inset-0 bg-yellow-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-30">
-        <div class="max-w-md w-full bg-slate-900 border-2 border-yellow-500/60 p-8 rounded-3xl shadow-2xl">
-            <div class="text-7xl mb-3 animate-bounce">🎓📜🎉</div>
-            <h2 class="text-3xl font-black text-yellow-300 mb-2">¡TE GRADUASTE CON HONORES!</h2>
-            <p class="text-slate-200 text-sm mb-6">Cruzaste el campus, esquivaste todos los contratiempos y recibiste tu título a tiempo.</p>
-
-            <div class="bg-slate-800/90 p-4 rounded-2xl text-center mb-6">
-                <span class="text-xs uppercase text-slate-400 block mb-1">Puntuación Final Total</span>
-                <span id="victory-score" class="text-4xl font-black text-yellow-400">0</span>
-            </div>
-
-            <button id="btn-restart-game" class="w-full py-4 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-950 font-black text-xl rounded-2xl shadow-lg hover:from-yellow-300 hover:to-amber-400 btn-bounce border-2 border-yellow-200">
-                VOLVER A JUGAR
-            </button>
-        </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-    <script>
-        /* ==========================================================================
-           CONFIGURACIÓN Y ESTRUCTURA DE NIVELES DEL JUEGO
-           ========================================================================== */
-        
-        // Arreglo de configuración para cada uno de los 3 niveles del juego.
-        const LEVELS = [
-            {
-                id: 1,
-                title: "Nivel 1",
-                name: "Salir del Barrio",
-                distance: 250,        // Distancia a recorrer para completar la meta
-                timeLimit: 50,       // Tiempo en segundos
-                speed: 0.35,          // Velocidad base de desplazamiento
-                colorGround: 0x4a5568, // Color de la pista (Asfalto de barrio)
-                colorFog: 0x1a202c     // Color de la niebla atmosférica
-            },
-            {
-                id: 2,
-                title: "Nivel 2",
-                name: "Cruzando la Ciudad",
-                distance: 400,
-                timeLimit: 60,
-                speed: 0.45,          // Velocidad más alta
-                colorGround: 0x2d3748, // Asfalto urbano oscuro
-                colorFog: 0x111827
-            },
-            {
-                id: 3,
-                title: "Nivel 3",
-                name: "Campus Universitario",
-                distance: 600,
-                timeLimit: 70,
-                speed: 0.55,          // Máxima velocidad
-                colorGround: 0x15803d, // Pista rodeada de césped universitario
-                colorFog: 0x064e3b
-            }
-        ];
-
-        /* ==========================================================================
-           VARIABLES DE ESTADO GLOBAL DEL JUEGO
-           ========================================================================== */
-        
-        let currentLevelIdx = 0;   // Índice del nivel actual en el arreglo LEVELS
-        let score = 0;             // Puntuación global del jugador (birretes recolectados)
-        let lives = 3;             // Vidas restantes en el nivel activo
-        let distanceCovered = 0;   // Distancia acumulada en el nivel actual
-        let timeLeft = 0;          // Segundos restantes en el contador
-        let timerInterval = null;  // Identificador del temporizador `setInterval`
-        let isGameRunning = false; // Indica si el bucle del juego está activo
-
-        // Estados de efectos y Power-Ups
-        let invulnerable = false;      // Indica si el jugador es inmune temporalmente
-        let invulnerableTimer = 0;  // Contador de fotogramas de invulnerabilidad
-        let shieldActive = false;       // Indica si el escudo "Tesis Aprobada" está activo
-        let speedBoostActive = false;   // Indica si el boost de café está activo
-        let speedBoostTimer = 0;    // Contador de tiempo restante del boost de café
-
-        /* ==========================================================================
-           VARIABLES PRINCIPALES DE THREE.JS (ESCENA 3D)
-           ========================================================================== */
-        
-        let scene, camera, renderer;
-        let playerGroup, playerMesh;
-        let roadSegment;
-        
-        // Colecciones para gestión de entidades activas en el mundo 3D
-        let obstacles = [];        // Obstáculos generados en la vía
-        let collectibles = [];     // Power-ups y monedas en la vía
-        let sceneryElements = [];  // Elementos decorativos laterales (edificios, árboles, líneas)
-
-        /* ==========================================================================
-           MECÁNICAS Y FÍSICAS DE MOVIMIENTO DEL JUGADOR
-           ========================================================================== */
-        
-        // Coordenadas X fijas para los 3 carriles de la carrera
-        const LANES = [-2.2, 0, 2.2]; // [Carril Izquierdo, Carril Centro, Carril Derecho]
-        let currentLane = 1;          // Inicia en el carril central (índice 1)
-        let targetX = 0;              // Coordenada X hacia la que el jugador se desplaza suavemente
-        
-        // Estado del Salto y Deslizamiento
-        let isJumping = false;
-        let jumpVelocity = 0;
-        let isSliding = false;
-        let slideTimer = 0;
-        const basePlayerY = 0.5;      // Altura Y inicial del jugador sobre el suelo
-
-        /* ==========================================================================
-           INICIALIZACIÓN DEL MOTOR 3D (THREE.JS)
-           ========================================================================== */
-        
-        function initEngine() {
-            const container = document.getElementById('game-container');
-
-            // 1. Crear la escena 3D con efecto de niebla atmosférica
-            scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x1a202c, 0.025);
-
-            // 2. Configurar la cámara en perspectiva (Visión desde atrás del corredor)
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-            camera.position.set(0, 3.2, 5.5);
-            camera.lookAt(0, 1.2, -5);
-
-            // 3. Crear el renderizador WebGL con sombras suaves activadas
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            container.appendChild(renderer.domElement);
-
-            // 4. Agregar iluminación ambiental y direccional con proyección de sombras
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-            scene.add(ambientLight);
-
-            const dirLight = new THREE.DirectionalLight(0xfff5ea, 0.8);
-            dirLight.position.set(10, 20, 10);
-            dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 1024;
-            dirLight.shadow.mapSize.height = 1024;
-            scene.add(dirLight);
-
-            // Escuchar el evento de cambio de tamaño de ventana para ajustar el canvas
-            window.addEventListener('resize', onWindowResize);
-        }
-
-        // Ajusta el ratio de aspecto de la cámara cuando cambia el tamaño de la pantalla
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        /* ==========================================================================
-           CONSTRUCCIÓN DEL PERSONAJE ESTUDIANTE EN 3D
-           ========================================================================== */
-        
-        function createPlayer() {
-            playerGroup = new THREE.Group();
-
-            // Cuerpo / Túnica de graduación (Cilindro azul)
-            const bodyGeo = new THREE.CylinderGeometry(0.35, 0.45, 0.9, 8);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1e40af, roughness: 0.4 });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 0.45;
-            body.castShadow = true;
-            playerGroup.add(body);
-
-            // Cabeza (Esfera tono piel)
+  <!-- Menú de Inicio -->
+  <div id="start-menu" class="absolute inset-0 bg-slate-950/90 flex flex-col justify-center items-center z-20 p-4">
+    <div class="max-w-md text-center bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl">
+      <h1 class="text-4xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-amber-400">
+        CARRERA A LA GRADUACIÓN
+      </h1>
+      <p class="text-slate-400 mb-6 text-sm">
+        ¡Te quedaste dormido! Corre esquivando obstáculos del día a día para llegar a tiempo a la entrega de títulos.
+      </p>
       
+      <div class="text-left bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs mb-6 space-y-2">
+        <p class="font-bold text-slate-300">🎮 Controles:</p>
+        <p>• <b>Flechas Izq / Der:</b> Cambiar de carril</p>
+        <p>• <b>Flecha Arriba:</b> Saltar obstáculos bajos</p>
+        <p>• <b>Flecha Abajo:</b> Deslizarse bajo letreros</p>
+      </div>
+
+      <button id="start-btn" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg transition active:scale-95">
+        ¡INICIAR CARRERA!
+      </button>
+    </div>
+  </div>
+
+  <!-- Pantalla de Game Over / Victoria -->
+  <div id="game-modal" class="absolute inset-0 bg-slate-950/95 flex flex-col justify-center items-center z-30 p-4 hidden">
+    <div class="max-w-md text-center bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl">
+      <h2 id="modal-title" class="text-3xl font-extrabold mb-2"></h2>
+      <p id="modal-msg" class="text-slate-400 mb-6 text-sm"></p>
+      <button id="modal-btn" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg transition active:scale-95">
+        Continuar
+      </button>
+    </div>
+  </div>
+
+  <!-- Script Principal del Juego -->
+  <script>
+    // ==========================================
+    // 1. CONFIGURACIÓN E INICIALIZACIÓN
+    // ==========================================
+    let scene, camera, renderer;
+    let player, road;
+    let obstacles = [];
+    let powerups = [];
+    let isPlaying = false;
+    
+    // Configuración del jugador
+    const playerConfig = {
+      lane: 0, // -1: Izquierda, 0: Centro, 1: Derecha
+      targetX: 0,
+      y: 0.8,
+      isJumping: false,
+      isSliding: false,
+      jumpVelocity: 0,
+      slideTimer: 0,
+      lives: 3,
+      invulnerable: false,
+      hasShield: false,
+      speedBoost: false
+    };
+
+    // Configuración del juego y niveles
+    let score = 0;
+    let currentLevel = 1;
+    let distanceTraveled = 0;
+    let targetDistance = 1000;
+    let gameSpeed = 0.6;
+    let levelTime = 60;
+    let timerInterval = null;
+
+    const lanePositions = [-2.5, 0, 2.5];
+
+    function init() {
+      // Crear escena
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0f172a);
+      scene.fog = new THREE.FogExp2(0x0f172a, 0.015);
+
+      // Cámara
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 4, 8);
+      camera.lookAt(0, 1, -5);
+
+      // Renderizador
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.shadowMap.enabled = true;
+      document.body.appendChild(renderer.domElement);
+
+      // Iluminación
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      dirLight.position.set(10, 20, 10);
+      dirLight.castShadow = true;
+      scene.add(dirLight);
+
+      // Construir escenario y jugador
+      createRoad();
+      createPlayer();
+
+      // Escuchar eventos
+      window.addEventListener('resize', onWindowResize);
+      window.addEventListener('keydown', handleInput);
+
+      document.getElementById('start-btn').addEventListener('click', startGame);
+      document.getElementById('modal-btn').addEventListener('click', restartOrNextLevel);
+
+      // Loop de renderizado
+      animate();
+    }
+
+    // ==========================================
+    // 2. CREACIÓN DE OBJETOS 3D
+    // ==========================================
+    function createRoad() {
+      // Carretera infinita
+      const geometry = new THREE.PlaneGeometry(10, 200);
+      const material = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 });
+      road = new THREE.Mesh(geometry, material);
+      road.rotation.x = -Math.PI / 2;
+      road.position.z = -80;
+      road.receiveShadow = true;
+      scene.add(road);
+    }
+
+    function createPlayer() {
+      // Grupo del jugador (Estudiante)
+      player = new THREE.Group();
+
+      // Cuerpo
+      const bodyGeo = new THREE.CylinderGeometry(0.4, 0.4, 1.2, 8);
+      const bodyMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      body.position.y = 0.6;
+      body.castShadow = true;
+      player.add(body);
+
+      // Cabeza
+      const headGeo = new THREE.SphereGeometry(0.3, 16, 16);
+      const headMat = new THREE.MeshStandardMaterial({ color: 0xfdba74 });
+      const head = new THREE.Mesh(headGeo, headMat);
+      head.position.y = 1.4;
+      player.add(head);
+
+      // Birrete
+      const capGeo = new THREE.BoxGeometry(0.7, 0.05, 0.7);
+      const capMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
+      const cap = new THREE.Mesh(capGeo, capMat);
+      cap.position.y = 1.65;
+      player.add(cap);
+
+      player.position.set(0, 0, 0);
+      scene.add(player);
+    }
+
+    function spawnObstacle() {
+      if (!isPlaying) return;
+
+      const lane = Math.floor(Math.random() * 3) - 1;
+      const type = Math.random() > 0.5 ? 'low' : 'high'; // 'low' = saltar, 'high' = agacharse
+      
+      let geo, mat, mesh;
+
+      if (type === 'low') {
+        // Cono de tráfico / Obstáculo bajo
+        geo = new THREE.ConeGeometry(0.5, 1, 8);
+        mat = new THREE.MeshStandardMaterial({ color: 0xf97316 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(lanePositions[lane + 1], 0.5, -100);
+      } else {
+        // Barrera alta / Deslizarse
+        geo = new THREE.BoxGeometry(2, 0.4, 0.4);
+        mat = new THREE.MeshStandardMaterial({ color: 0xef4444 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(lanePositions[lane + 1], 1.6, -100);
+      }
+
+      mesh.castShadow = true;
+      mesh.userData = { type: type, lane: lane };
+      scene.add(mesh);
+      obstacles.push(mesh);
+    }
+
+    function spawnPowerUp() {
+      if (!isPlaying) return;
+
+      const lane = Math.floor(Math.random() * 3) - 1;
+      const geo = new THREE.OctahedronGeometry(0.4);
+      const mat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706 });
+      const mesh = new THREE.Mesh(geo, mat);
+
+      mesh.position.set(lanePositions[lane + 1], 1, -100);
+      mesh.userData = { lane: lane };
+      scene.add(mesh);
+      powerups.push(mesh);
+    }
+
+    // ==========================================
+    // 3. LOGICA Y ACTUALIZACIÓN DEL JUEGO
+    // ==========================================
+    function handleInput(e) {
+      if (!isPlaying) return;
+
+      if ((e.key === 'ArrowLeft' || e.key === 'a') && playerConfig.lane > -1) {
+        playerConfig.lane--;
+      }
+      if ((e.key === 'ArrowRight' || e.key === 'd') && playerConfig.lane < 1) {
+        playerConfig.lane++;
+      }
+      if ((e.key === 'ArrowUp' || e.key === 'w') && !playerConfig.isJumping) {
+        playerConfig.isJumping = true;
+        playerConfig.jumpVelocity = 0.2;
+      }
+      if ((e.key === 'ArrowDown' || e.key === 's') && !playerConfig.isSliding) {
+        playerConfig.isSliding = true;
+        playerConfig.slideTimer = 30; // cuadros de duración
+        player.scale.y = 0.5;
+      }
+
+      playerConfig.targetX = lanePositions[playerConfig.lane + 1];
+    }
+
+    function updatePlayer() {
+      // Movimiento suave entre carriles
+      player.position.x += (playerConfig.targetX - player.position.x) * 0.2;
+
+      // Salto
+      if (playerConfig.isJumping) {
+        player.position.y += playerConfig.jumpVelocity;
+        playerConfig.jumpVelocity -= 0.012; // Gravitación
+
+        if (player.position.y <= 0) {
+          player.position.y = 0;
+          playerConfig.isJumping = false;
+        }
+      }
+
+      // Deslizamiento
+      if (playerConfig.isSliding) {
+        playerConfig.slideTimer--;
+        if (playerConfig.slideTimer <= 0) {
+          playerConfig.isSliding = false;
+          player.scale.y = 1.0;
+        }
+      }
+    }
+
+    function updateEnvironment() {
+      // Mover obstáculos hacia el jugador
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        const obs = obstacles[i];
+        obs.position.z += gameSpeed;
+
+        // Detección de colisión
+        if (Math.abs(obs.position.z - player.position.z) < 0.8 && obs.userData.lane === playerConfig.lane) {
+          let hit = false;
+          if (obs.userData.type === 'low' && player.position.y < 0.6) hit = true;
+          if (obs.userData.type === 'high' && !playerConfig.isSliding) hit = true;
+
+          if (hit && !playerConfig.invulnerable) {
+            handleHit();
+            scene.remove(obs);
+            obstacles.splice(i, 1);
+            continue;
+          }
+        }
+
+        // Eliminar si sobrepasa al jugador
+        if (obs.position.z > 5) {
+          scene.remove(obs);
+          obstacles.splice(i, 1);
+        }
+      }
+
+      // Mover Power-Ups
+      for (let i = powerups.length - 1; i >= 0; i--) {
+        const p = powerups[i];
+        p.position.z += gameSpeed;
+        p.rotation.y += 0.05;
+
+        // Recolección
+        if (Math.abs(p.position.z - player.position.z) < 0.8 && p.userData.lane === playerConfig.lane) {
+          score += 100;
+          document.getElementById('score-display').innerText = score;
+          scene.remove(p);
+          powerups.splice(i, 1);
+          continue;
+        }
+
+        if (p.position.z > 5) {
+          scene.remove(p);
+          powerups.splice(i, 1);
+        }
+      }
+
+      // Actualizar progreso
+      distanceTraveled += gameSpeed * 2;
+      const progress = Math.min((distanceTraveled / targetDistance) * 100, 100);
+      document.getElementById('progress-bar').style.width = progress + '%';
+
+      if (distanceTraveled >= targetDistance) {
+        winLevel();
+      }
+    }
+
+    function handleHit() {
+      playerConfig.lives--;
+      updateLivesUI();
+
+      if (playerConfig.lives <= 0) {
+        gameOver();
+      } else {
+        // Invulnerabilidad temporal
+        playerConfig.invulnerable = true;
+        player.children.forEach(m => m.material.transparent = true);
+        
+        let flashes = 0;
+        const interval = setInterval(() => {
+          player.visible = !player.visible;
+          flashes++;
+          if (flashes > 10) {
+            clearInterval(interval);
+            player.visible = true;
+            playerConfig.invulnerable = false;
+          }
+        }, 150);
+      }
+    }
+
+    function updateLivesUI() {
+      const container = document.getElementById('lives-container');
+      container.innerHTML = '🎓'.repeat(Math.max(0, playerConfig.lives));
+    }
+
+    // ==========================================
+    // 4. CONTROL DEL ESTADO DEL JUEGO
+    // ==========================================
+    function startGame() {
+      document.getElementById('start-menu').classList.add('hidden');
+      document.getElementById('hud').classList.remove('hidden');
+      
+      resetLevelData();
+      isPlaying = true;
+
+      // Temporizador
+      timerInterval = setInterval(() => {
+        if (!isPlaying) return;
+        levelTime--;
+        document.getElementById('time-display').innerText = levelTime + 's';
+
+        if (levelTime <= 0) {
+          gameOver("¡Se te acabó el tiempo para llegar!");
+        }
+      }, 1000);
+
+      // Generación de objetos
+      setInterval(spawnObstacle, 1500);
+      setInterval(spawnPowerUp, 3000);
+    }
+
+    function resetLevelData() {
+      distanceTraveled = 0;
+      levelTime = 60;
+      playerConfig.lives = 3;
+      playerConfig.lane = 0;
+      player.position.set(0, 0, 0);
+      updateLivesUI();
+      
+      // Limpiar objetos
+      obstacles.forEach(o => scene.remove(o));
+      powerups.forEach(p => scene.remove(p));
+      obstacles = [];
+      powerups = [];
+    }
+
+    function gameOver(msg = "Perdiste todas tus vidas. Reprobaste el año.") {
+      isPlaying = false;
+      clearInterval(timerInterval);
+      showModal("GAME OVER ❌", msg, "Reintentar Nivel");
+    }
+
+    function winLevel() {
+      isPlaying = false;
+      clearInterval(timerInterval);
+
+      if (currentLevel < 3) {
+        currentLevel++;
+        showModal("¡NIVEL COMPLETADO! 🎉", `Llegaste a tiempo. Prepárate para el Nivel ${currentLevel}`, "Siguiente Nivel");
+      } else {
+        showModal("¡TE HAS GRADUADO! 🎓🏆", `¡Felicidades! Completaste la carrera con ${score} puntos.`, "Jugar de Nuevo");
+        currentLevel = 1;
+        score = 0;
+      }
+    }
+
+    function showModal(title, msg, btnText) {
+      document.getElementById('modal-title').innerText = title;
+      document.getElementById('modal-msg').innerText = msg;
+      document.getElementById('modal-btn').innerText = btnText;
+      document.getElementById('game-modal').classList.remove('hidden');
+    }
+
+    function restartOrNextLevel() {
+      document.getElementById('game-modal').classList.add('hidden');
+      document.getElementById('level-display').innerText = currentLevel;
+      document.getElementById('score-display').innerText = score;
+      startGame();
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // Loop Principal
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (isPlaying) {
+        updatePlayer();
+        updateEnvironment();
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    // Inicializar al cargar ventana
+    window.onload = init;
+  </script>
+</body>
+</html>
