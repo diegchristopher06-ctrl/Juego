@@ -1,24 +1,43 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Carrera a la Graduación 3D</title>
+  <title>Carrera a la Graduación 3D - Niveles Largos</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { margin: 0; overflow: hidden; background-color: #020617; font-family: system-ui, -apple-system, sans-serif; }
-    canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
-    .no-select { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    body { 
+      margin: 0; 
+      overflow: hidden; 
+      background-color: #020617; 
+      font-family: system-ui, -apple-system, sans-serif; 
+    }
+    canvas { 
+      display: block; 
+      position: absolute; 
+      top: 0; 
+      left: 0; 
+      width: 100vw; 
+      height: 100vh; 
+      z-index: 1; 
+    }
+    .no-select { 
+      -webkit-touch-callout: none; 
+      -webkit-user-select: none; 
+      user-select: none; 
+    }
   </style>
 </head>
 <body class="no-select text-white">
 
-  <!-- Lienzo 3D del Juego -->
+  <!-- Lienzo Canvas 3D Nativo -->
   <canvas id="gameCanvas"></canvas>
 
-  <!-- Interfaz HUD -->
+  <!-- Interfaz de Usuario (HUD) -->
   <div id="hud" class="absolute top-0 left-0 w-full p-4 flex justify-between items-center z-20 pointer-events-none hidden">
-    <div class="bg-slate-900/90 border border-slate-700/60 p-3 rounded-2xl flex items-center gap-4 shadow-2xl">
+    <!-- Vidas y Nivel -->
+    <div class="bg-slate-900/90 border border-slate-700/60 p-3 rounded-2xl flex items-center gap-4 shadow-2xl backdrop-blur-md">
       <div>
         <p class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Vidas</p>
         <div id="lives-container" class="flex gap-1 text-2xl filter drop-shadow">🎓🎓🎓</div>
@@ -29,10 +48,11 @@
       </div>
     </div>
 
-    <div class="w-1/3 bg-slate-900/90 border border-slate-700/60 p-3 rounded-2xl shadow-2xl">
+    <!-- Progreso del Nivel y Reloj -->
+    <div class="w-1/3 bg-slate-900/90 border border-slate-700/60 p-3 rounded-2xl shadow-2xl backdrop-blur-md">
       <div class="flex justify-between text-[11px] text-slate-300 mb-1 font-bold">
         <span>CASA 🏠</span>
-        <span id="time-display" class="text-amber-400 font-mono text-sm font-black">60s</span>
+        <span id="time-display" class="text-amber-400 font-mono text-sm font-black">150s</span>
         <span>GRADUACIÓN 🎓</span>
       </div>
       <div class="w-full bg-slate-950 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-800">
@@ -40,25 +60,26 @@
       </div>
     </div>
 
-    <div class="bg-slate-900/90 border border-slate-700/60 p-3 rounded-2xl text-right shadow-2xl">
+    <!-- Puntaje -->
+    <div class="bg-slate-900/90 border border-slate-700/60 p-3 rounded-2xl text-right shadow-2xl backdrop-blur-md">
       <p class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Puntuación</p>
       <p id="score-display" class="text-2xl font-black text-amber-400">0</p>
     </div>
   </div>
 
-  <!-- Controles Táctiles Pantalla -->
+  <!-- Controles Táctiles en Pantalla -->
   <div id="controls-ui" class="absolute bottom-6 left-0 w-full px-6 flex justify-between items-center z-20 pointer-events-auto hidden">
     <div class="flex gap-4">
-      <button onclick="movePlayer(-1)" class="w-16 h-16 bg-slate-900/90 active:bg-indigo-600 border border-slate-700 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl transition active:scale-90">⬅️</button>
-      <button onclick="movePlayer(1)" class="w-16 h-16 bg-slate-900/90 active:bg-indigo-600 border border-slate-700 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl transition active:scale-90">➡️</button>
+      <button onclick="movePlayer(-1)" type="button" class="w-16 h-16 bg-slate-900/90 active:bg-indigo-600 border border-slate-700 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl backdrop-blur-md transition active:scale-90">⬅️</button>
+      <button onclick="movePlayer(1)" type="button" class="w-16 h-16 bg-slate-900/90 active:bg-indigo-600 border border-slate-700 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl backdrop-blur-md transition active:scale-90">➡️</button>
     </div>
     <div class="flex gap-4">
-      <button onclick="slidePlayer()" class="w-16 h-16 bg-slate-900/90 active:bg-amber-600 border border-slate-700 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl transition active:scale-90">⬇️</button>
-      <button onclick="jumpPlayer()" class="w-16 h-16 bg-slate-900/90 active:bg-emerald-600 border border-slate-700 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl transition active:scale-90">⬆️</button>
+      <button onclick="slidePlayer()" type="button" class="w-16 h-16 bg-slate-900/90 active:bg-amber-600 border border-slate-700 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl backdrop-blur-md transition active:scale-90">⬇️</button>
+      <button onclick="jumpPlayer()" type="button" class="w-16 h-16 bg-slate-900/90 active:bg-emerald-600 border border-slate-700 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl backdrop-blur-md transition active:scale-90">⬆️</button>
     </div>
   </div>
 
-  <!-- Menú Principal -->
+  <!-- Menú de Inicio -->
   <div id="start-menu" class="absolute inset-0 bg-slate-950/95 flex flex-col justify-center items-center z-30 p-4 pointer-events-auto">
     <div class="max-w-md text-center bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
       <div class="text-5xl mb-3">🎓🏃‍♂️</div>
@@ -66,23 +87,23 @@
         CARRERA A LA GRADUACIÓN
       </h1>
       <p class="text-slate-400 mb-6 text-xs leading-relaxed">
-        Esquiva obstáculos, junta birretes y llega a tiempo a tu ceremonia de titulación.
+        ¡Edición de trayecto largo! Mantén la concentración durante 3 niveles extensos y cada vez más rápidos para obtener tu título universitario.
       </p>
       
       <div class="text-left bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs mb-6 space-y-2">
-        <p class="font-extrabold text-slate-300 uppercase text-[10px] tracking-wider mb-1">🎮 Controles:</p>
-        <p class="text-slate-400">• <b>Izquierda / Derecha:</b> Mover de carril (A/D o Flechas)</p>
+        <p class="font-extrabold text-slate-300 uppercase text-[10px] tracking-wider mb-1">🎮 Controles del Estudiante:</p>
+        <p class="text-slate-400">• <b>Izquierda / Derecha:</b> Cambiar de carril (A/D o Flechas)</p>
         <p class="text-slate-400">• <b>Arriba:</b> Saltar conos (W o Flecha Arriba)</p>
         <p class="text-slate-400">• <b>Abajo:</b> Deslizarse bajo letreros (S o Flecha Abajo)</p>
       </div>
 
-      <button onclick="clickStartGame()" type="button" class="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold rounded-2xl shadow-xl transition active:scale-95 text-sm tracking-wide cursor-pointer">
+      <button onclick="clickStartGame()" type="button" class="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold rounded-2xl shadow-xl shadow-indigo-500/20 transition active:scale-95 text-sm tracking-wide cursor-pointer">
         ¡INICIAR CARRERA 3D!
       </button>
     </div>
   </div>
 
-  <!-- Modal Resultados -->
+  <!-- Modal de Fin de Juego / Transición de Nivel -->
   <div id="game-modal" class="absolute inset-0 bg-slate-950/95 flex flex-col justify-center items-center z-40 p-4 pointer-events-auto hidden">
     <div class="max-w-md text-center bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
       <h2 id="modal-title" class="text-3xl font-black mb-2"></h2>
@@ -98,9 +119,14 @@
     let isPlaying = false;
     let score = 0;
     let currentLevel = 1;
-    let levelTime = 60;
+    
+    // Parámetros de extensión de nivel y progresión de dificultad
+    let levelTime = 150; // Reloj de 150s por nivel
     let distanceTraveled = 0;
-    let targetDistance = 1000;
+    let targetDistance = 3000; // Recorrido significativamente más largo
+    let baseGameSpeed = 0.018; 
+    let gameSpeed = 0.018;
+
     let timerInterval = null;
     let spawnObsInterval = null;
     let spawnPowInterval = null;
@@ -120,11 +146,24 @@
 
     let obstacles = [];
     let powerups = [];
+    let sceneryBuildings = [];
 
     function initCanvas() {
       canvas = document.getElementById('gameCanvas');
       ctx = canvas.getContext('2d');
       resize();
+      
+      // Generar elementos de fondo (Edificios en perspectiva)
+      sceneryBuildings = [];
+      for (let i = 0; i < 16; i++) {
+        sceneryBuildings.push({
+          z: (i / 16),
+          side: i % 2 === 0 ? -1 : 1,
+          height: 80 + Math.random() * 120,
+          color: i % 3 === 0 ? '#334155' : (i % 3 === 1 ? '#475569' : '#1e293b')
+        });
+      }
+
       window.addEventListener('resize', resize);
       window.addEventListener('keydown', handleKey);
       requestAnimationFrame(gameLoop);
@@ -135,23 +174,40 @@
       canvas.height = window.innerHeight;
     }
 
+    function getLevelSpeed() {
+      // Incremento paulatino de velocidad según el nivel actual
+      switch(currentLevel) {
+        case 1: return 0.018;
+        case 2: return 0.024;
+        case 3: return 0.030;
+        default: return 0.018;
+      }
+    }
+
     function clickStartGame() {
       document.getElementById('start-menu').classList.add('hidden');
       document.getElementById('hud').classList.remove('hidden');
       document.getElementById('controls-ui').classList.remove('hidden');
+      
       resetGame();
       isPlaying = true;
 
       clearTimers();
+      
+      // Temporizador del reloj
       timerInterval = setInterval(() => {
         if (!isPlaying) return;
         levelTime--;
         document.getElementById('time-display').innerText = levelTime + 's';
-        if (levelTime <= 0) gameOver("¡Se agótó el tiempo!");
+        if (levelTime <= 0) gameOver("¡Se agotó el tiempo para llegar a la ceremonia de graduación!");
       }, 1000);
 
-      spawnObsInterval = setInterval(spawnObstacle, 1200);
-      spawnPowInterval = setInterval(spawnPowerUp, 2500);
+      // Frecuencia de spawn ajustada a la velocidad del nivel
+      const obsSpawnDelay = Math.max(600, 1100 - (currentLevel * 150));
+      const powSpawnDelay = Math.max(1400, 2200 - (currentLevel * 200));
+
+      spawnObsInterval = setInterval(spawnObstacle, obsSpawnDelay);
+      spawnPowInterval = setInterval(spawnPowerUp, powSpawnDelay);
     }
 
     function clearTimers() {
@@ -161,9 +217,9 @@
     }
 
     function resetGame() {
-      score = 0;
+      gameSpeed = getLevelSpeed();
       lives = 3;
-      levelTime = 60;
+      levelTime = 150;
       distanceTraveled = 0;
       currentLane = 1;
       playerX = 0;
@@ -173,6 +229,8 @@
       powerups = [];
       updateLivesUI();
       document.getElementById('score-display').innerText = score;
+      document.getElementById('level-display').innerText = currentLevel;
+      document.getElementById('time-display').innerText = levelTime + 's';
     }
 
     function movePlayer(dir) {
@@ -205,21 +263,23 @@
     function spawnObstacle() {
       if (!isPlaying) return;
       const lane = Math.floor(Math.random() * 3);
-      const type = Math.random() > 0.5 ? 'low' : 'high';
-      obstacles.push({ lane, y: -50, z: 0, type });
+      const type = Math.random() > 0.45 ? 'low' : 'high';
+      obstacles.push({ lane, z: 0, type });
     }
 
     function spawnPowerUp() {
       if (!isPlaying) return;
       const lane = Math.floor(Math.random() * 3);
-      powerups.push({ lane, y: -50, z: 0 });
+      powerups.push({ lane, z: 0 });
     }
 
     function update() {
       if (!isPlaying) return;
 
+      // Movimiento suave hacia el carril objetivo
       playerX += (targetX - playerX) * 0.25;
 
+      // Salto
       if (isJumping) {
         playerY += jumpVel;
         jumpVel -= 1;
@@ -229,23 +289,35 @@
         }
       }
 
+      // Deslizamiento
       if (isSliding) {
         slideTimer--;
         if (slideTimer <= 0) isSliding = false;
       }
 
-      distanceTraveled += 4;
+      // Avance de distancia en el mapa largo
+      distanceTraveled += gameSpeed * 220;
       const prog = Math.min((distanceTraveled / targetDistance) * 100, 100);
       document.getElementById('progress-bar').style.width = prog + '%';
 
-      if (distanceTraveled >= targetDistance) winLevel();
+      if (distanceTraveled >= targetDistance) {
+        winLevel();
+        return;
+      }
 
-      // Obstáculos
+      // Mover fondo/edificios
+      sceneryBuildings.forEach(b => {
+        b.z += gameSpeed * 0.6;
+        if (b.z > 1.0) b.z -= 1.0;
+      });
+
+      // Mover y procesar obstáculos
       for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i];
-        obs.z += 0.018;
+        obs.z += gameSpeed;
 
-        if (obs.z >= 0.85 && obs.z <= 0.98 && obs.lane === currentLane) {
+        // Detección de colisión precisa en Z
+        if (obs.z >= 0.82 && obs.z <= 0.98 && obs.lane === currentLane) {
           let hit = false;
           if (obs.type === 'low' && playerY < 40) hit = true;
           if (obs.type === 'high' && !isSliding) hit = true;
@@ -260,13 +332,13 @@
         if (obs.z > 1.1) obstacles.splice(i, 1);
       }
 
-      // Birretes
+      // Mover y recolectar birretes (Powerups)
       for (let i = powerups.length - 1; i >= 0; i--) {
         let p = powerups[i];
-        p.z += 0.018;
+        p.z += gameSpeed;
 
-        if (p.z >= 0.85 && p.z <= 0.98 && p.lane === currentLane) {
-          score += 100;
+        if (p.z >= 0.82 && p.z <= 0.98 && p.lane === currentLane) {
+          score += 150;
           document.getElementById('score-display').innerText = score;
           powerups.splice(i, 1);
           continue;
@@ -283,7 +355,7 @@
       updateLivesUI();
 
       if (lives <= 0) {
-        gameOver();
+        gameOver("Perdiste tus 3 vidas en este trayecto largo. ¡Debes volver a intentarlo!");
       } else {
         invulnerable = true;
         setTimeout(() => invulnerable = false, 1500);
@@ -294,7 +366,7 @@
       document.getElementById('lives-container').innerHTML = '🎓'.repeat(Math.max(0, lives));
     }
 
-    function gameOver(msg = "Perdiste tus vidas. Inténtalo de nuevo.") {
+    function gameOver(msg) {
       isPlaying = false;
       clearTimers();
       document.getElementById('controls-ui').classList.add('hidden');
@@ -311,47 +383,78 @@
       if (currentLevel < 3) {
         currentLevel++;
         document.getElementById('modal-title').innerText = "¡NIVEL COMPLETADO! 🎉";
-        document.getElementById('modal-msg').innerText = `Llegaste a tiempo. Prepárate para el Nivel ${currentLevel}`;
+        document.getElementById('modal-msg').innerText = `Superaste el recorrido del Nivel ${currentLevel - 1}. El Nivel ${currentLevel} será más rápido y exigente.`;
       } else {
-        document.getElementById('modal-title').innerText = "¡TE HAS GRADUADO! 🎓🏆";
-        document.getElementById('modal-msg').innerText = `¡Felicidades! Terminaste con ${score} puntos.`;
+        document.getElementById('modal-title').innerText = "¡TE HAS GRADUADO CON HO NORES! 🎓🏆";
+        document.getElementById('modal-msg').innerText = `¡Felicidades! Lograste completar los 3 niveles largos con una puntuación final de ${score} puntos.`;
         currentLevel = 1;
+        score = 0;
       }
       document.getElementById('game-modal').classList.remove('hidden');
     }
 
     function restartOrNextLevel() {
       document.getElementById('game-modal').classList.add('hidden');
-      document.getElementById('level-display').innerText = currentLevel;
       clickStartGame();
     }
 
     function draw() {
+      // Fondo Noche Urbana
       ctx.fillStyle = '#020617';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const cx = canvas.width / 2;
-      const cy = canvas.height / 2 - 50;
+      const cy = canvas.height / 2 - 40;
 
-      // Dibujar carretera en perspectiva 3D
+      // Edificios laterales en perspectiva
+      sceneryBuildings.forEach(b => {
+        let scale = b.z;
+        let bx = cx + (b.side * (180 + scale * 500));
+        let by = cy + (canvas.height - cy) * scale;
+        let bw = 90 * scale;
+        let bh = b.height * scale;
+
+        ctx.fillStyle = b.color;
+        ctx.fillRect(bx - bw / 2, by - bh, bw, bh);
+      });
+
+      // Carretera principal
       ctx.fillStyle = '#1e293b';
       ctx.beginPath();
-      ctx.moveTo(cx - 60, cy);
-      ctx.lineTo(cx + 60, cy);
-      ctx.lineTo(cx + 380, canvas.height);
-      ctx.lineTo(cx - 380, canvas.height);
+      ctx.moveTo(cx - 70, cy);
+      ctx.lineTo(cx + 70, cy);
+      ctx.lineTo(cx + 420, canvas.height);
+      ctx.lineTo(cx - 420, canvas.height);
       ctx.closePath();
       ctx.fill();
 
-      // Líneas de carriles
-      ctx.strokeStyle = '#cbd5e1';
+      // Aceras laterales
+      ctx.fillStyle = '#475569';
+      ctx.beginPath();
+      ctx.moveTo(cx - 70, cy);
+      ctx.lineTo(cx - 90, cy);
+      ctx.lineTo(cx - 480, canvas.height);
+      ctx.lineTo(cx - 420, canvas.height);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(cx + 70, cy);
+      ctx.lineTo(cx + 90, cy);
+      ctx.lineTo(cx + 480, canvas.height);
+      ctx.lineTo(cx + 420, canvas.height);
+      ctx.closePath();
+      ctx.fill();
+
+      // Líneas divisoras de carril
+      ctx.strokeStyle = '#f8fafc';
       ctx.lineWidth = 3;
       ctx.setLineDash([15, 15]);
       ctx.beginPath();
-      ctx.moveTo(cx - 20, cy);
-      ctx.lineTo(cx - 120, canvas.height);
-      ctx.moveTo(cx + 20, cy);
-      ctx.lineTo(cx + 120, canvas.height);
+      ctx.moveTo(cx - 23, cy);
+      ctx.lineTo(cx - 140, canvas.height);
+      ctx.moveTo(cx + 23, cy);
+      ctx.lineTo(cx + 140, canvas.height);
       ctx.stroke();
       ctx.setLineDash([]);
 
@@ -360,76 +463,96 @@
         let scale = obs.z;
         let ox = cx + laneX[obs.lane] * scale;
         let oy = cy + (canvas.height - cy) * scale;
-        let size = 50 * scale;
+        let size = 55 * scale;
 
         if (obs.type === 'low') {
+          // Cono de construcción
           ctx.fillStyle = '#ea580c';
           ctx.beginPath();
-          ctx.moveTo(ox, oy - size * 1.5);
+          ctx.moveTo(ox, oy - size * 1.6);
           ctx.lineTo(ox - size, oy);
           ctx.lineTo(ox + size, oy);
           ctx.closePath();
           ctx.fill();
+
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(ox - size * 0.4, oy - size * 0.9, size * 0.8, size * 0.25);
         } else {
+          // Letrero alto
           ctx.fillStyle = '#d97706';
-          ctx.fillRect(ox - size * 1.5, oy - size * 2, size * 3, size);
+          ctx.fillRect(ox - size * 1.6, oy - size * 2.2, size * 3.2, size * 0.9);
+          ctx.fillStyle = '#78350f';
+          ctx.fillRect(ox - size * 1.4, oy - size * 1.3, size * 0.3, size * 1.3);
+          ctx.fillRect(ox + size * 1.1, oy - size * 1.3, size * 0.3, size * 1.3);
         }
       });
 
-      // Dibujar Birretes
+      // Dibujar Birretes Coleccionables
       powerups.forEach(p => {
         let scale = p.z;
         let px = cx + laneX[p.lane] * scale;
-        let py = cy + (canvas.height - cy) * scale - 20;
-        let size = 20 * scale;
+        let py = cy + (canvas.height - cy) * scale - 25 * scale;
+        let size = 22 * scale;
 
         ctx.fillStyle = '#f59e0b';
         ctx.beginPath();
         ctx.arc(px, py, size, 0, Math.PI * 2);
         ctx.fill();
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(px - size * 0.7, py - size * 0.2, size * 1.4, size * 0.4);
       });
 
-      // Dibujar Jugador 3D/Pseudo-3D
+      // Dibujar Personaje Estudiante
       if (isPlaying) {
         let px = cx + playerX;
-        let py = canvas.height - 100 - playerY;
+        let py = canvas.height - 95 - playerY;
 
-        if (!invulnerable || Math.floor(animFrame / 5) % 2 === 0) {
+        if (!invulnerable || Math.floor(animFrame / 4) % 2 === 0) {
           ctx.save();
+
+          // Sombra
+          ctx.fillStyle = 'rgba(0,0,0,0.35)';
+          ctx.beginPath();
+          ctx.ellipse(px, canvas.height - 90, 25, 8, 0, 0, Math.PI * 2);
+          ctx.fill();
+
           if (isSliding) {
+            // Animación al Deslizarse
             ctx.fillStyle = '#2563eb';
-            ctx.fillRect(px - 25, py + 30, 50, 25);
-          } else {
-            // Cuerpo y Cabeza
-            ctx.fillStyle = '#2563eb';
-            ctx.fillRect(px - 20, py - 60, 40, 50);
+            ctx.fillRect(px - 28, py + 25, 56, 22);
             ctx.fillStyle = '#fdba74';
             ctx.beginPath();
-            ctx.arc(px, py - 75, 15, 0, Math.PI * 2);
+            ctx.arc(px + 20, py + 30, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#1e1b4b';
+            ctx.fillRect(px + 10, py + 18, 22, 5);
+          } else {
+            // Cuerpo y Camisa
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(px - 18, py - 60, 36, 48);
+
+            // Cabeza
+            ctx.fillStyle = '#fdba74';
+            ctx.beginPath();
+            ctx.arc(px, py - 74, 14, 0, Math.PI * 2);
             ctx.fill();
 
-            // Birrete
+            // Birrete de Graduación
             ctx.fillStyle = '#1e1b4b';
-            ctx.fillRect(px - 25, py - 95, 50, 8);
+            ctx.fillRect(px - 24, py - 94, 48, 6);
+            ctx.fillRect(px - 10, py - 88, 20, 6);
 
-            // Piernas animadas al correr
+            // Borla dorada del birrete
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(px, py - 94);
+            ctx.lineTo(px + 16, py - 86);
+            ctx.stroke();
+
+            // Pantalón y Animación de Correr
             ctx.fillStyle = '#0f172a';
-            let legOffset = Math.sin(animFrame * 0.3) * 15;
-            ctx.fillRect(px - 15, py - 10, 10, 30 + legOffset);
-            ctx.fillRect(px + 5, py - 10, 10, 30 - legOffset);
-          }
-          ctx.restore();
-        }
-      }
-    }
-
-    function gameLoop() {
-      update();
-      draw();
-      requestAnimationFrame(gameLoop);
-    }
-
-    window.onload = initCanvas;
-  </script>
-</body>
-</html>
+            let legOffset = Math.sin(animFrame * 0.35) * 16;
+            ctx.fillRect(px - 14, py - 12, 10, 32 + legOffset);
+            ctx.fillRect(px + 4, py -
