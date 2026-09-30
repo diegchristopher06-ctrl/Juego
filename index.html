@@ -4,26 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Carrera a la Graduación 3D</title>
-  <!-- Estilos con Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Librería Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     body { margin: 0; overflow: hidden; background-color: #020617; font-family: system-ui, -apple-system, sans-serif; }
-    canvas { display: block; }
-    .no-select {
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
-    }
+    canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
+    .no-select { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   </style>
 </head>
 <body class="no-select text-white">
 
-  <!-- Interfaz de Usuario (HUD) -->
-  <div id="hud" class="absolute top-0 left-0 w-full p-4 flex justify-between items-center z-10 pointer-events-none hidden">
-    <!-- Vidas y Nivel -->
-    <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 p-3 rounded-2xl flex items-center gap-4 shadow-2xl">
+  <!-- Lienzo 3D del Juego -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Interfaz HUD -->
+  <div id="hud" class="absolute top-0 left-0 w-full p-4 flex justify-between items-center z-20 pointer-events-none hidden">
+    <div class="bg-slate-900/90 border border-slate-700/60 p-3 rounded-2xl flex items-center gap-4 shadow-2xl">
       <div>
         <p class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Vidas</p>
         <div id="lives-container" class="flex gap-1 text-2xl filter drop-shadow">🎓🎓🎓</div>
@@ -34,8 +29,7 @@
       </div>
     </div>
 
-    <!-- Progreso del Nivel -->
-    <div class="w-1/3 bg-slate-900/90 backdrop-blur-md border border-slate-700/60 p-3 rounded-2xl shadow-2xl">
+    <div class="w-1/3 bg-slate-900/90 border border-slate-700/60 p-3 rounded-2xl shadow-2xl">
       <div class="flex justify-between text-[11px] text-slate-300 mb-1 font-bold">
         <span>CASA 🏠</span>
         <span id="time-display" class="text-amber-400 font-mono text-sm font-black">60s</span>
@@ -46,37 +40,27 @@
       </div>
     </div>
 
-    <!-- Puntaje -->
-    <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 p-3 rounded-2xl text-right shadow-2xl">
+    <div class="bg-slate-900/90 border border-slate-700/60 p-3 rounded-2xl text-right shadow-2xl">
       <p class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Puntuación</p>
       <p id="score-display" class="text-2xl font-black text-amber-400">0</p>
     </div>
   </div>
 
-  <!-- Controles Táctiles -->
-  <div id="controls-ui" class="absolute bottom-6 left-0 w-full px-6 flex justify-between items-center z-20 hidden">
+  <!-- Controles Táctiles Pantalla -->
+  <div id="controls-ui" class="absolute bottom-6 left-0 w-full px-6 flex justify-between items-center z-20 pointer-events-auto hidden">
     <div class="flex gap-4">
-      <button id="btn-left" class="w-16 h-16 bg-slate-900/80 active:bg-indigo-600 border border-slate-700/80 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl backdrop-blur transition active:scale-90">
-        ⬅️️
-      </button>
-      <button id="btn-right" class="w-16 h-16 bg-slate-900/80 active:bg-indigo-600 border border-slate-700/80 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl backdrop-blur transition active:scale-90">
-        ➡️
-      </button>
+      <button onclick="movePlayer(-1)" class="w-16 h-16 bg-slate-900/90 active:bg-indigo-600 border border-slate-700 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl transition active:scale-90">⬅️</button>
+      <button onclick="movePlayer(1)" class="w-16 h-16 bg-slate-900/90 active:bg-indigo-600 border border-slate-700 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl transition active:scale-90">➡️</button>
     </div>
-
     <div class="flex gap-4">
-      <button id="btn-down" class="w-16 h-16 bg-slate-900/80 active:bg-amber-600 border border-slate-700/80 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl backdrop-blur transition active:scale-90">
-        ⬇️
-      </button>
-      <button id="btn-up" class="w-16 h-16 bg-slate-900/80 active:bg-emerald-600 border border-slate-700/80 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl backdrop-blur transition active:scale-90">
-        ⬆️
-      </button>
+      <button onclick="slidePlayer()" class="w-16 h-16 bg-slate-900/90 active:bg-amber-600 border border-slate-700 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl transition active:scale-90">⬇️</button>
+      <button onclick="jumpPlayer()" class="w-16 h-16 bg-slate-900/90 active:bg-emerald-600 border border-slate-700 rounded-2xl flex justify-center items-center text-3xl font-bold shadow-2xl transition active:scale-90">⬆️</button>
     </div>
   </div>
 
-  <!-- Menú de Inicio -->
-  <div id="start-menu" class="absolute inset-0 bg-slate-950/90 backdrop-blur-lg flex flex-col justify-center items-center z-30 p-4">
-    <div class="max-w-md text-center bg-slate-900/90 border border-slate-800 p-8 rounded-3xl shadow-2xl">
+  <!-- Menú Principal -->
+  <div id="start-menu" class="absolute inset-0 bg-slate-950/95 flex flex-col justify-center items-center z-30 p-4 pointer-events-auto">
+    <div class="max-w-md text-center bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
       <div class="text-5xl mb-3">🎓🏃‍♂️</div>
       <h1 class="text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-amber-400">
         CARRERA A LA GRADUACIÓN
@@ -85,272 +69,132 @@
         Esquiva obstáculos, junta birretes y llega a tiempo a tu ceremonia de titulación.
       </p>
       
-      <div class="text-left bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 text-xs mb-6 space-y-2">
+      <div class="text-left bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs mb-6 space-y-2">
         <p class="font-extrabold text-slate-300 uppercase text-[10px] tracking-wider mb-1">🎮 Controles:</p>
         <p class="text-slate-400">• <b>Izquierda / Derecha:</b> Mover de carril (A/D o Flechas)</p>
         <p class="text-slate-400">• <b>Arriba:</b> Saltar conos (W o Flecha Arriba)</p>
         <p class="text-slate-400">• <b>Abajo:</b> Deslizarse bajo letreros (S o Flecha Abajo)</p>
       </div>
 
-      <button id="start-btn" type="button" class="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold rounded-2xl shadow-xl shadow-indigo-500/20 transition active:scale-95 text-sm tracking-wide cursor-pointer">
+      <button onclick="clickStartGame()" type="button" class="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold rounded-2xl shadow-xl transition active:scale-95 text-sm tracking-wide cursor-pointer">
         ¡INICIAR CARRERA 3D!
       </button>
     </div>
   </div>
 
-  <!-- Modal de Game Over / Victoria -->
-  <div id="game-modal" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col justify-center items-center z-40 p-4 hidden">
+  <!-- Modal Resultados -->
+  <div id="game-modal" class="absolute inset-0 bg-slate-950/95 flex flex-col justify-center items-center z-40 p-4 pointer-events-auto hidden">
     <div class="max-w-md text-center bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
       <h2 id="modal-title" class="text-3xl font-black mb-2"></h2>
       <p id="modal-msg" class="text-slate-400 mb-6 text-xs leading-relaxed"></p>
-      <button id="modal-btn" type="button" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold rounded-2xl shadow-lg transition active:scale-95 text-sm cursor-pointer">
+      <button onclick="restartOrNextLevel()" type="button" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold rounded-2xl shadow-lg transition active:scale-95 text-sm cursor-pointer">
         Continuar
       </button>
     </div>
   </div>
 
-  <!-- Código Principal JS Corregido -->
   <script>
-    let scene, camera, renderer;
-    let player, roadGroup;
-    let headMesh, bodyMesh, leftArm, rightArm, leftLeg, rightLeg;
-    let obstacles = [];
-    let powerups = [];
-    let sceneryObjects = [];
+    let canvas, ctx;
     let isPlaying = false;
-    let spawnTimerObs = null;
-    let spawnTimerPow = null;
-    let animTime = 0;
-    
-    const playerConfig = {
-      lane: 0,
-      targetX: 0,
-      isJumping: false,
-      isSliding: false,
-      jumpVelocity: 0,
-      slideTimer: 0,
-      lives: 3,
-      invulnerable: false
-    };
-
     let score = 0;
     let currentLevel = 1;
+    let levelTime = 60;
     let distanceTraveled = 0;
     let targetDistance = 1000;
-    let gameSpeed = 0.65;
-    let levelTime = 60;
     let timerInterval = null;
+    let spawnObsInterval = null;
+    let spawnPowInterval = null;
 
-    const lanePositions = [-2.5, 0, 2.5];
+    const laneX = [-140, 0, 140];
+    let currentLane = 1;
+    let targetX = 0;
+    let playerX = 0;
+    let playerY = 0;
+    let jumpVel = 0;
+    let isJumping = false;
+    let isSliding = false;
+    let slideTimer = 0;
+    let lives = 3;
+    let invulnerable = false;
+    let animFrame = 0;
 
-    function init() {
-      try {
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x020617);
-        scene.fog = new THREE.FogExp2(0x020617, 0.012);
+    let obstacles = [];
+    let powerups = [];
 
-        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 3.8, 7.5);
-        camera.lookAt(0, 1.2, -5);
-
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        document.body.appendChild(renderer.domElement);
-
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-        scene.add(ambientLight);
-
-        const dirLight = new THREE.DirectionalLight(0xfff7ed, 1.0);
-        dirLight.position.set(10, 20, 10);
-        dirLight.castShadow = true;
-        scene.add(dirLight);
-
-        createWorld();
-        createHumanPlayer();
-
-        window.addEventListener('resize', onWindowResize);
-        window.addEventListener('keydown', handleInputKeyboard);
-
-        document.getElementById('btn-left').addEventListener('click', () => movePlayer(-1));
-        document.getElementById('btn-right').addEventListener('click', () => movePlayer(1));
-        document.getElementById('btn-up').addEventListener('click', jumpPlayer);
-        document.getElementById('btn-down').addEventListener('click', slidePlayer);
-
-        document.getElementById('start-btn').addEventListener('click', startGame);
-        document.getElementById('modal-btn').addEventListener('click', restartOrNextLevel);
-
-        animate();
-      } catch (err) {
-        console.error("Error inicializando Three.js:", err);
-      }
+    function initCanvas() {
+      canvas = document.getElementById('gameCanvas');
+      ctx = canvas.getContext('2d');
+      resize();
+      window.addEventListener('resize', resize);
+      window.addEventListener('keydown', handleKey);
+      requestAnimationFrame(gameLoop);
     }
 
-    function createWorld() {
-      roadGroup = new THREE.Group();
-
-      const roadGeo = new THREE.PlaneGeometry(9, 250);
-      const roadMat = new THREE.MeshLambertMaterial({ color: 0x1e293b });
-      const road = new THREE.Mesh(roadGeo, roadMat);
-      road.rotation.x = -Math.PI / 2;
-      road.position.z = -100;
-      road.receiveShadow = true;
-      roadGroup.add(road);
-
-      const sidewalkGeo = new THREE.BoxGeometry(2, 0.3, 250);
-      const sidewalkMat = new THREE.MeshLambertMaterial({ color: 0x64748b });
-      
-      const leftSidewalk = new THREE.Mesh(sidewalkGeo, sidewalkMat);
-      leftSidewalk.position.set(-5.5, 0.1, -100);
-      roadGroup.add(leftSidewalk);
-
-      const rightSidewalk = new THREE.Mesh(sidewalkGeo, sidewalkMat);
-      rightSidewalk.position.set(5.5, 0.1, -100);
-      roadGroup.add(rightSidewalk);
-
-      for (let z = 10; z > -200; z -= 8) {
-        const lineGeo = new THREE.PlaneGeometry(0.2, 4);
-        const lineMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
-        
-        const line1 = new THREE.Mesh(lineGeo, lineMat);
-        line1.rotation.x = -Math.PI / 2;
-        line1.position.set(-1.25, 0.01, z);
-        roadGroup.add(line1);
-
-        const line2 = new THREE.Mesh(lineGeo, lineMat);
-        line2.rotation.x = -Math.PI / 2;
-        line2.position.set(1.25, 0.01, z);
-        roadGroup.add(line2);
-      }
-
-      const buildingColors = [0x334155, 0x475569, 0x1e293b];
-      for (let z = 0; z > -200; z -= 25) {
-        const h1 = 15 + Math.random() * 15;
-        const b1Geo = new THREE.BoxGeometry(8, h1, 15);
-        const b1Mat = new THREE.MeshLambertMaterial({ color: buildingColors[Math.floor(Math.random() * buildingColors.length)] });
-        const b1 = new THREE.Mesh(b1Geo, b1Mat);
-        b1.position.set(-11, h1 / 2, z);
-        sceneryObjects.push(b1);
-        scene.add(b1);
-
-        const h2 = 15 + Math.random() * 15;
-        const b2Geo = new THREE.BoxGeometry(8, h2, 15);
-        const b2Mat = new THREE.MeshLambertMaterial({ color: buildingColors[Math.floor(Math.random() * buildingColors.length)] });
-        const b2 = new THREE.Mesh(b2Geo, b2Mat);
-        b2.position.set(11, h2 / 2, z);
-        sceneryObjects.push(b2);
-        scene.add(b2);
-      }
-
-      scene.add(roadGroup);
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
 
-    function createHumanPlayer() {
-      player = new THREE.Group();
+    function clickStartGame() {
+      document.getElementById('start-menu').classList.add('hidden');
+      document.getElementById('hud').classList.remove('hidden');
+      document.getElementById('controls-ui').classList.remove('hidden');
+      resetGame();
+      isPlaying = true;
 
-      const skinMat = new THREE.MeshLambertMaterial({ color: 0xfdba74 });
-      const shirtMat = new THREE.MeshLambertMaterial({ color: 0x2563eb });
-      const pantsMat = new THREE.MeshLambertMaterial({ color: 0x0f172a });
-      const capMat = new THREE.MeshLambertMaterial({ color: 0x1e1b4b });
+      clearTimers();
+      timerInterval = setInterval(() => {
+        if (!isPlaying) return;
+        levelTime--;
+        document.getElementById('time-display').innerText = levelTime + 's';
+        if (levelTime <= 0) gameOver("¡Se agótó el tiempo!");
+      }, 1000);
 
-      const torsoGeo = new THREE.BoxGeometry(0.65, 0.85, 0.35);
-      bodyMesh = new THREE.Mesh(torsoGeo, shirtMat);
-      bodyMesh.position.y = 1.15;
-      bodyMesh.castShadow = true;
-      player.add(bodyMesh);
-
-      const headGeo = new THREE.SphereGeometry(0.24, 16, 16);
-      headMesh = new THREE.Mesh(headGeo, skinMat);
-      headMesh.position.y = 1.72;
-      player.add(headMesh);
-
-      const capTopGeo = new THREE.BoxGeometry(0.65, 0.03, 0.65);
-      const capTop = new THREE.Mesh(capTopGeo, capMat);
-      capTop.position.y = 1.95;
-      player.add(capTop);
-
-      const armGeo = new THREE.BoxGeometry(0.16, 0.65, 0.16);
-      leftArm = new THREE.Mesh(armGeo, skinMat);
-      leftArm.position.set(-0.44, 1.25, 0);
-      player.add(leftArm);
-
-      rightArm = new THREE.Mesh(armGeo, skinMat);
-      rightArm.position.set(0.44, 1.25, 0);
-      player.add(rightArm);
-
-      const legGeo = new THREE.BoxGeometry(0.2, 0.75, 0.2);
-      leftLeg = new THREE.Mesh(legGeo, pantsMat);
-      leftLeg.position.set(-0.2, 0.38, 0);
-      player.add(leftLeg);
-
-      rightLeg = new THREE.Mesh(legGeo, pantsMat);
-      rightLeg.position.set(0.2, 0.38, 0);
-      player.add(rightLeg);
-
-      player.position.set(0, 0, 0);
-      scene.add(player);
+      spawnObsInterval = setInterval(spawnObstacle, 1200);
+      spawnPowInterval = setInterval(spawnPowerUp, 2500);
     }
 
-    function spawnObstacle() {
+    function clearTimers() {
+      if (timerInterval) clearInterval(timerInterval);
+      if (spawnObsInterval) clearInterval(spawnObsInterval);
+      if (spawnPowInterval) clearInterval(spawnPowInterval);
+    }
+
+    function resetGame() {
+      score = 0;
+      lives = 3;
+      levelTime = 60;
+      distanceTraveled = 0;
+      currentLane = 1;
+      playerX = 0;
+      targetX = 0;
+      playerY = 0;
+      obstacles = [];
+      powerups = [];
+      updateLivesUI();
+      document.getElementById('score-display').innerText = score;
+    }
+
+    function movePlayer(dir) {
       if (!isPlaying) return;
-
-      const lane = Math.floor(Math.random() * 3) - 1;
-      const type = Math.random() > 0.5 ? 'low' : 'high';
-      let mesh;
-
-      if (type === 'low') {
-        const geo = new THREE.ConeGeometry(0.45, 1, 12);
-        const mat = new THREE.MeshLambertMaterial({ color: 0xea580c });
-        mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(lanePositions[lane + 1], 0.5, -100);
-      } else {
-        const geo = new THREE.BoxGeometry(2.2, 0.45, 0.3);
-        const mat = new THREE.MeshLambertMaterial({ color: 0xd97706 });
-        mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(lanePositions[lane + 1], 1.55, -100);
-      }
-
-      mesh.userData = { type: type, lane: lane };
-      scene.add(mesh);
-      obstacles.push(mesh);
-    }
-
-    function spawnPowerUp() {
-      if (!isPlaying) return;
-
-      const lane = Math.floor(Math.random() * 3) - 1;
-      const geo = new THREE.OctahedronGeometry(0.45);
-      const mat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
-      const mesh = new THREE.Mesh(geo, mat);
-
-      mesh.position.set(lanePositions[lane + 1], 1.1, -100);
-      mesh.userData = { lane: lane };
-      scene.add(mesh);
-      powerups.push(mesh);
-    }
-
-    function movePlayer(direction) {
-      if (!isPlaying) return;
-      if (direction === -1 && playerConfig.lane > -1) playerConfig.lane--;
-      if (direction === 1 && playerConfig.lane < 1) playerConfig.lane++;
-      playerConfig.targetX = lanePositions[playerConfig.lane + 1];
+      if (dir === -1 && currentLane > 0) currentLane--;
+      if (dir === 1 && currentLane < 2) currentLane++;
+      targetX = laneX[currentLane];
     }
 
     function jumpPlayer() {
-      if (!isPlaying || playerConfig.isJumping) return;
-      playerConfig.isJumping = true;
-      playerConfig.jumpVelocity = 0.22;
+      if (!isPlaying || isJumping) return;
+      isJumping = true;
+      jumpVel = 18;
     }
 
     function slidePlayer() {
-      if (!isPlaying || playerConfig.isSliding) return;
-      playerConfig.isSliding = true;
-      playerConfig.slideTimer = 30;
-      player.scale.y = 0.5;
+      if (!isPlaying || isSliding) return;
+      isSliding = true;
+      slideTimer = 35;
     }
 
-    function handleInputKeyboard(e) {
+    function handleKey(e) {
       if (!isPlaying) return;
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') movePlayer(-1);
       if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') movePlayer(1);
@@ -358,170 +202,105 @@
       if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') slidePlayer();
     }
 
-    function updatePlayer() {
-      player.position.x += (playerConfig.targetX - player.position.x) * 0.22;
-
-      if (playerConfig.isJumping) {
-        player.position.y += playerConfig.jumpVelocity;
-        playerConfig.jumpVelocity -= 0.012;
-
-        if (player.position.y <= 0) {
-          player.position.y = 0;
-          playerConfig.isJumping = false;
-        }
-      }
-
-      if (playerConfig.isSliding) {
-        playerConfig.slideTimer--;
-        if (playerConfig.slideTimer <= 0) {
-          playerConfig.isSliding = false;
-          player.scale.y = 1.0;
-        }
-      }
-
-      if (!playerConfig.isJumping && !playerConfig.isSliding) {
-        animTime += 0.22;
-        leftArm.rotation.x = Math.sin(animTime) * 0.7;
-        rightArm.rotation.x = -Math.sin(animTime) * 0.7;
-        leftLeg.rotation.x = -Math.sin(animTime) * 0.8;
-        rightLeg.rotation.x = Math.sin(animTime) * 0.8;
-      }
+    function spawnObstacle() {
+      if (!isPlaying) return;
+      const lane = Math.floor(Math.random() * 3);
+      const type = Math.random() > 0.5 ? 'low' : 'high';
+      obstacles.push({ lane, y: -50, z: 0, type });
     }
 
-    function updateEnvironment() {
+    function spawnPowerUp() {
+      if (!isPlaying) return;
+      const lane = Math.floor(Math.random() * 3);
+      powerups.push({ lane, y: -50, z: 0 });
+    }
+
+    function update() {
+      if (!isPlaying) return;
+
+      playerX += (targetX - playerX) * 0.25;
+
+      if (isJumping) {
+        playerY += jumpVel;
+        jumpVel -= 1;
+        if (playerY <= 0) {
+          playerY = 0;
+          isJumping = false;
+        }
+      }
+
+      if (isSliding) {
+        slideTimer--;
+        if (slideTimer <= 0) isSliding = false;
+      }
+
+      distanceTraveled += 4;
+      const prog = Math.min((distanceTraveled / targetDistance) * 100, 100);
+      document.getElementById('progress-bar').style.width = prog + '%';
+
+      if (distanceTraveled >= targetDistance) winLevel();
+
+      // Obstáculos
       for (let i = obstacles.length - 1; i >= 0; i--) {
-        const obs = obstacles[i];
-        obs.position.z += gameSpeed;
+        let obs = obstacles[i];
+        obs.z += 0.018;
 
-        if (Math.abs(obs.position.z - player.position.z) < 0.8 && obs.userData.lane === playerConfig.lane) {
+        if (obs.z >= 0.85 && obs.z <= 0.98 && obs.lane === currentLane) {
           let hit = false;
-          if (obs.userData.type === 'low' && player.position.y < 0.6) hit = true;
-          if (obs.userData.type === 'high' && !playerConfig.isSliding) hit = true;
+          if (obs.type === 'low' && playerY < 40) hit = true;
+          if (obs.type === 'high' && !isSliding) hit = true;
 
-          if (hit && !playerConfig.invulnerable) {
+          if (hit && !invulnerable) {
             handleHit();
-            scene.remove(obs);
             obstacles.splice(i, 1);
             continue;
           }
         }
 
-        if (obs.position.z > 5) {
-          scene.remove(obs);
-          obstacles.splice(i, 1);
-        }
+        if (obs.z > 1.1) obstacles.splice(i, 1);
       }
 
+      // Birretes
       for (let i = powerups.length - 1; i >= 0; i--) {
-        const p = powerups[i];
-        p.position.z += gameSpeed;
-        p.rotation.y += 0.06;
+        let p = powerups[i];
+        p.z += 0.018;
 
-        if (Math.abs(p.position.z - player.position.z) < 0.8 && p.userData.lane === playerConfig.lane) {
+        if (p.z >= 0.85 && p.z <= 0.98 && p.lane === currentLane) {
           score += 100;
           document.getElementById('score-display').innerText = score;
-          scene.remove(p);
           powerups.splice(i, 1);
           continue;
         }
 
-        if (p.position.z > 5) {
-          scene.remove(p);
-          powerups.splice(i, 1);
-        }
+        if (p.z > 1.1) powerups.splice(i, 1);
       }
 
-      sceneryObjects.forEach(obj => {
-        obj.position.z += gameSpeed;
-        if (obj.position.z > 10) {
-          obj.position.z -= 200;
-        }
-      });
-
-      distanceTraveled += gameSpeed * 2;
-      const progress = Math.min((distanceTraveled / targetDistance) * 100, 100);
-      document.getElementById('progress-bar').style.width = progress + '%';
-
-      if (distanceTraveled >= targetDistance) {
-        winLevel();
-      }
+      animFrame++;
     }
 
     function handleHit() {
-      playerConfig.lives--;
+      lives--;
       updateLivesUI();
 
-      if (playerConfig.lives <= 0) {
+      if (lives <= 0) {
         gameOver();
       } else {
-        playerConfig.invulnerable = true;
-        let flashes = 0;
-        const interval = setInterval(() => {
-          player.visible = !player.visible;
-          flashes++;
-          if (flashes > 10) {
-            clearInterval(interval);
-            player.visible = true;
-            playerConfig.invulnerable = false;
-          }
-        }, 150);
+        invulnerable = true;
+        setTimeout(() => invulnerable = false, 1500);
       }
     }
 
     function updateLivesUI() {
-      document.getElementById('lives-container').innerHTML = '🎓'.repeat(Math.max(0, playerConfig.lives));
+      document.getElementById('lives-container').innerHTML = '🎓'.repeat(Math.max(0, lives));
     }
 
-    function startGame() {
-      clearTimers();
-
-      document.getElementById('start-menu').classList.add('hidden');
-      document.getElementById('hud').classList.remove('hidden');
-      document.getElementById('controls-ui').classList.remove('hidden');
-      
-      resetLevelData();
-      isPlaying = true;
-
-      timerInterval = setInterval(() => {
-        if (!isPlaying) return;
-        levelTime--;
-        document.getElementById('time-display').innerText = levelTime + 's';
-
-        if (levelTime <= 0) {
-          gameOver("¡Se te acabó el tiempo para llegar a la ceremonia!");
-        }
-      }, 1000);
-
-      spawnTimerObs = setInterval(spawnObstacle, 1300);
-      spawnTimerPow = setInterval(spawnPowerUp, 2600);
-    }
-
-    function resetLevelData() {
-      distanceTraveled = 0;
-      levelTime = 60;
-      playerConfig.lives = 3;
-      playerConfig.lane = 0;
-      playerConfig.targetX = 0;
-      player.position.set(0, 0, 0);
-      updateLivesUI();
-      
-      obstacles.forEach(o => scene.remove(o));
-      powerups.forEach(p => scene.remove(p));
-      obstacles = [];
-      powerups = [];
-    }
-
-    function clearTimers() {
-      if (timerInterval) clearInterval(timerInterval);
-      if (spawnTimerObs) clearInterval(spawnTimerObs);
-      if (spawnTimerPow) clearInterval(spawnTimerPow);
-    }
-
-    function gameOver(msg = "Perdiste tus 3 vidas. Reprobaste el año.") {
+    function gameOver(msg = "Perdiste tus vidas. Inténtalo de nuevo.") {
       isPlaying = false;
       clearTimers();
       document.getElementById('controls-ui').classList.add('hidden');
-      showModal("GAME OVER ❌", msg, "Reintentar Nivel");
+      document.getElementById('modal-title').innerText = "GAME OVER ❌";
+      document.getElementById('modal-msg').innerText = msg;
+      document.getElementById('game-modal').classList.remove('hidden');
     }
 
     function winLevel() {
@@ -531,4 +310,126 @@
 
       if (currentLevel < 3) {
         currentLevel++;
-        showModal("¡NIVEL COMPLETADO! 🎉", `Llegaste
+        document.getElementById('modal-title').innerText = "¡NIVEL COMPLETADO! 🎉";
+        document.getElementById('modal-msg').innerText = `Llegaste a tiempo. Prepárate para el Nivel ${currentLevel}`;
+      } else {
+        document.getElementById('modal-title').innerText = "¡TE HAS GRADUADO! 🎓🏆";
+        document.getElementById('modal-msg').innerText = `¡Felicidades! Terminaste con ${score} puntos.`;
+        currentLevel = 1;
+      }
+      document.getElementById('game-modal').classList.remove('hidden');
+    }
+
+    function restartOrNextLevel() {
+      document.getElementById('game-modal').classList.add('hidden');
+      document.getElementById('level-display').innerText = currentLevel;
+      clickStartGame();
+    }
+
+    function draw() {
+      ctx.fillStyle = '#020617';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2 - 50;
+
+      // Dibujar carretera en perspectiva 3D
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.moveTo(cx - 60, cy);
+      ctx.lineTo(cx + 60, cy);
+      ctx.lineTo(cx + 380, canvas.height);
+      ctx.lineTo(cx - 380, canvas.height);
+      ctx.closePath();
+      ctx.fill();
+
+      // Líneas de carriles
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([15, 15]);
+      ctx.beginPath();
+      ctx.moveTo(cx - 20, cy);
+      ctx.lineTo(cx - 120, canvas.height);
+      ctx.moveTo(cx + 20, cy);
+      ctx.lineTo(cx + 120, canvas.height);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Dibujar Obstáculos
+      obstacles.forEach(obs => {
+        let scale = obs.z;
+        let ox = cx + laneX[obs.lane] * scale;
+        let oy = cy + (canvas.height - cy) * scale;
+        let size = 50 * scale;
+
+        if (obs.type === 'low') {
+          ctx.fillStyle = '#ea580c';
+          ctx.beginPath();
+          ctx.moveTo(ox, oy - size * 1.5);
+          ctx.lineTo(ox - size, oy);
+          ctx.lineTo(ox + size, oy);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          ctx.fillStyle = '#d97706';
+          ctx.fillRect(ox - size * 1.5, oy - size * 2, size * 3, size);
+        }
+      });
+
+      // Dibujar Birretes
+      powerups.forEach(p => {
+        let scale = p.z;
+        let px = cx + laneX[p.lane] * scale;
+        let py = cy + (canvas.height - cy) * scale - 20;
+        let size = 20 * scale;
+
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(px, py, size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Dibujar Jugador 3D/Pseudo-3D
+      if (isPlaying) {
+        let px = cx + playerX;
+        let py = canvas.height - 100 - playerY;
+
+        if (!invulnerable || Math.floor(animFrame / 5) % 2 === 0) {
+          ctx.save();
+          if (isSliding) {
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(px - 25, py + 30, 50, 25);
+          } else {
+            // Cuerpo y Cabeza
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(px - 20, py - 60, 40, 50);
+            ctx.fillStyle = '#fdba74';
+            ctx.beginPath();
+            ctx.arc(px, py - 75, 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Birrete
+            ctx.fillStyle = '#1e1b4b';
+            ctx.fillRect(px - 25, py - 95, 50, 8);
+
+            // Piernas animadas al correr
+            ctx.fillStyle = '#0f172a';
+            let legOffset = Math.sin(animFrame * 0.3) * 15;
+            ctx.fillRect(px - 15, py - 10, 10, 30 + legOffset);
+            ctx.fillRect(px + 5, py - 10, 10, 30 - legOffset);
+          }
+          ctx.restore();
+        }
+      }
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    window.onload = initCanvas;
+  </script>
+</body>
+</html>
