@@ -3,93 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encuentra la Piedra - Juego de los Vasos</title>
+    <title>Juego de los Vasos - 10 Niveles</title>
+    <!-- Carga de Tailwind CSS para un diseño moderno y fluido sin necesidad de escribir CSS pesado desde cero -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            user-select: none;
+            user-select: none; /* Desactiva la selección de texto para evitar distracciones al hacer clic */
             -webkit-user-select: none;
             overflow-x: hidden;
         }
-        .wood-texture {
-            background: radial-gradient(circle at center, #2c1b18 0%, #170d0b 100%);
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
-        }
+
+        /* Estilo para el fondo simulando la textura y ambiente de una mesa de juego */
         .table-mat {
-            background: radial-gradient(ellipse at center, #1b4332 0%, #081c15 80%);
-            border: 12px solid #3d2314;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7), inset 0 0 40px rgba(0,0,0,0.6);
+            background: radial-gradient(ellipse at center, #1e293b 0%, #0f172a 80%);
+            border: 10px solid #334155;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 0 60px rgba(0, 0, 0, 0.8);
         }
+
+        /* Ajuste fino para interacción táctil en pantallas móviles */
         canvas {
             touch-action: none;
         }
+
+        /* Barra de scroll personalizada para la navegación horizontal de 10 niveles */
+        .level-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        .level-scroll::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 9999px;
+        }
     </style>
 </head>
-<body class="bg-zinc-950 text-white min-h-screen flex flex-col items-center justify-between p-2 sm:p-4">
+<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-2 sm:p-4">
 
-    <header class="w-full max-w-4xl flex flex-wrap justify-between items-center bg-zinc-900/90 border border-zinc-800 p-3 sm:p-4 rounded-2xl shadow-xl backdrop-blur-md mb-3 gap-2">
+    <!-- Encabezado principal: Nombre del juego, racha actual y control de sonido -->
+    <header class="w-full max-w-4xl flex flex-wrap justify-between items-center bg-slate-900/90 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-xl backdrop-blur-md mb-3 gap-2">
         <div class="flex items-center gap-3">
             <div class="bg-amber-500/20 border border-amber-500/40 p-2 rounded-xl text-amber-400">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
             <div>
                 <h1 class="font-extrabold text-lg sm:text-xl text-amber-400 tracking-wide">La Piedra Oculta</h1>
-                <p class="text-xs text-zinc-400" id="level-title">Nivel 1: Principiante</p>
+                <p class="text-xs text-slate-400" id="level-title">Nivel 1: Principiante</p>
             </div>
         </div>
 
         <div class="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm">
             <div class="text-center">
-                <span class="block text-zinc-400 text-xs uppercase tracking-wider">Racha</span>
+                <span class="block text-slate-400 text-xs uppercase tracking-wider">Racha</span>
                 <span class="font-bold text-amber-400 text-base sm:text-lg" id="streak-count">0</span>
             </div>
             <div class="text-center">
-                <span class="block text-zinc-400 text-xs uppercase tracking-wider">Máx Racha</span>
+                <span class="block text-slate-400 text-xs uppercase tracking-wider">Máx Racha</span>
                 <span class="font-bold text-emerald-400 text-base sm:text-lg" id="best-streak">0</span>
             </div>
-            <button id="sound-btn" class="p-2.5 bg-zinc-800 hover:bg-zinc-700 active:scale-95 rounded-xl border border-zinc-700 transition">
+            <button id="sound-btn" class="p-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 rounded-xl border border-slate-700 transition" title="Activar/Desactivar Sonido">
                 <svg id="sound-icon-on" class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-                <svg id="sound-icon-off" class="w-5 h-5 text-zinc-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
+                <svg id="sound-icon-off" class="w-5 h-5 text-slate-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
             </button>
         </div>
     </header>
 
-    <div class="w-full max-w-4xl flex items-center justify-between gap-1 sm:gap-2 mb-3 bg-zinc-900/60 p-1.5 sm:p-2 rounded-2xl border border-zinc-800/80 overflow-x-auto">
-        <button data-level="1" class="level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-amber-500 text-zinc-950 shadow-md">Nivel 1<span class="block text-[10px] font-normal opacity-80">3 Vasos</span></button>
-        <button data-level="2" class="level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-zinc-800 text-zinc-400 hover:bg-zinc-700">Nivel 2<span class="block text-[10px] font-normal opacity-80">4 Vasos</span></button>
-        <button data-level="3" class="level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-zinc-800 text-zinc-400 hover:bg-zinc-700">Nivel 3<span class="block text-[10px] font-normal opacity-80">5 Vasos</span></button>
-        <button data-level="4" class="level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-zinc-800 text-zinc-400 hover:bg-zinc-700">Nivel 4<span class="block text-[10px] font-normal opacity-80">6 Vasos</span></button>
-        <button data-level="5" class="level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-zinc-800 text-zinc-400 hover:bg-zinc-700">Nivel 5<span class="block text-[10px] font-normal opacity-80">7 Vasos</span></button>
+    <!-- Barra de selección de los 10 Niveles con desplazamiento horizontal -->
+    <div class="w-full max-w-4xl flex items-center justify-start gap-2 mb-3 bg-slate-900/60 p-2 rounded-2xl border border-slate-800/80 overflow-x-auto level-scroll">
+        <!-- Los botones de nivel 1 al 10 se generan dinámicamente o se configuran vía JS -->
+        <div id="level-buttons-container" class="flex gap-2 min-w-full"></div>
     </div>
 
+    <!-- Zona Principal del juego: Canvas y modales -->
     <main class="relative w-full max-w-4xl flex-1 flex flex-col justify-center items-center">
         <div class="table-mat relative w-full h-[380px] sm:h-[460px] rounded-3xl overflow-hidden flex items-center justify-center">
             
-            <!-- Canvas principal donde se dibujan los vasos y la piedra -->
+            <!-- Lienzo HTML5 Canvas donde renderizamos los vasos y la piedra -->
             <canvas id="gameCanvas" class="w-full h-full cursor-pointer"></canvas>
 
-            <!-- Banner o Mensaje sobre la mesa de juego -->
-            <div id="status-banner" class="absolute top-4 left-1/2 -translate-x-1/2 bg-zinc-950/80 border border-amber-500/30 backdrop-blur-md px-6 py-2 rounded-full text-xs sm:text-sm font-semibold text-amber-300 shadow-lg transition-all duration-300 text-center pointer-events-none">
-                Presiona "Iniciar Mezcla" para observar la piedra
+            <!-- Banner informativo con las instrucciones actuales para el jugador -->
+            <div id="status-banner" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-950/85 border border-amber-500/40 backdrop-blur-md px-6 py-2 rounded-full text-xs sm:text-sm font-semibold text-amber-300 shadow-xl transition-all duration-300 text-center pointer-events-none z-10">
+                Presiona "¡Iniciar Mezcla!" para ver la piedra
             </div>
 
-            <!-- Modal / Pop-up de Resultado (Victoria/Derrota) -->
-            <div id="result-modal" class="hidden absolute inset-0 bg-zinc-950/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20 animate-fade-in">
+            <!-- Ventana emergente (Modal) al terminar un intento (Victoria / Derrota) -->
+            <div id="result-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20 animate-fade-in">
                 <div id="modal-icon-container" class="mb-3 p-4 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                     <svg id="success-icon" class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     <svg id="fail-icon" class="w-12 h-12 hidden text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </div>
                 <h2 id="result-title" class="text-2xl sm:text-3xl font-extrabold text-white mb-2">¡Correcto!</h2>
-                <p id="result-desc" class="text-sm text-zinc-300 max-w-md mb-6">¡Has mantenido la vista fija en la piedra perfectamente!</p>
+                <p id="result-desc" class="text-sm text-slate-300 max-w-md mb-6">¡Has mantenido la vista fija en la piedra perfectamente!</p>
                 
                 <div class="flex flex-wrap justify-center gap-3">
-                    <button id="retry-btn" class="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-sm rounded-xl border border-zinc-600 transition active:scale-95 flex items-center gap-2">
+                    <button id="retry-btn" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm rounded-xl border border-slate-600 transition active:scale-95 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                         Repetir Nivel
                     </button>
-                    <button id="next-btn" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-extrabold text-sm rounded-xl shadow-lg transition active:scale-95 flex items-center gap-2">
+                    <button id="next-btn" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-sm rounded-xl shadow-lg transition active:scale-95 flex items-center gap-2">
                         Siguiente Nivel
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </button>
@@ -98,20 +109,27 @@
         </div>
     </main>
 
+    <!-- Botón inferior para arrancar la partida -->
     <footer class="w-full max-w-4xl mt-3 flex justify-center">
-        <button id="start-btn" class="w-full sm:w-auto px-10 py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-zinc-950 font-black text-base uppercase tracking-wider rounded-2xl shadow-xl shadow-amber-500/20 active:scale-95 transition-all">
+        <button id="start-btn" class="w-full sm:w-auto px-12 py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-base uppercase tracking-wider rounded-2xl shadow-xl shadow-amber-500/20 active:scale-95 transition-all">
             ¡Iniciar Mezcla!
         </button>
     </footer>
 
     <script>
-        // Sistema de audio sintetizado con Web Audio API para no depender de archivos externos
+        /* ==========================================================================
+           MÓDULO DE AUDIO SINTETIZADO (Web Audio API)
+           --------------------------------------------------------------------------
+           Genera efectos de sonido mediante ondas matemáticas puras (Osciladores),
+           evitando la necesidad de cargar archivos externos MP3 o WAV.
+           ========================================================================== */
         class SoundEffects {
             constructor() {
                 this.ctx = null;
                 this.muted = false;
             }
 
+            // Inicializa el contexto de audio tras el primer clic del usuario (política de navegadores)
             init() {
                 if (!this.ctx) {
                     const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -119,6 +137,7 @@
                 }
             }
 
+            // Efecto al levantar el vaso (un tono en rampa ascendente)
             playLift() {
                 if (this.muted || !this.ctx) return;
                 const osc = this.ctx.createOscillator();
@@ -134,21 +153,23 @@
                 osc.stop(this.ctx.currentTime + 0.18);
             }
 
+            // Efecto sutil para el deslizamiento rápido de vasos
             playSwap() {
                 if (this.muted || !this.ctx) return;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(140, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.12);
-                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(90, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start();
-                osc.stop(this.ctx.currentTime + 0.12);
+                osc.stop(this.ctx.currentTime + 0.08);
             }
 
+            // Melodía corta de victoria
             playWin() {
                 if (this.muted || !this.ctx) return;
                 const notes = [261.63, 329.63, 392.00, 523.25];
@@ -166,15 +187,16 @@
                 });
             }
 
+            // Tono grave disonante para derrota
             playLose() {
                 if (this.muted || !this.ctx) return;
-                const notes = [300, 260, 220, 180];
+                const notes = [280, 240, 200, 160];
                 notes.forEach((freq, idx) => {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     osc.type = 'sawtooth';
                     osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.1);
-                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime + idx * 0.1);
+                    gain.gain.setValueAtTime(0.12, this.ctx.currentTime + idx * 0.1);
                     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.1 + 0.2);
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
@@ -188,110 +210,109 @@
     </script>
 
     <script>
+        /* ==========================================================================
+           CONFIGURACIÓN DE NIVELES Y VARIABLES DE ESTADO
+           --------------------------------------------------------------------------
+           10 Niveles con velocidad creciente (ms por intercambio más bajos) y
+           mayor cantidad de vasos para un desafío visual alto.
+           ========================================================================== */
+        const LEVEL_CONFIGS = {
+            1:  { cups: 3,  speed: 650, swaps: 5,  name: "Nivel 1: Principiante" },
+            2:  { cups: 3,  speed: 520, swaps: 7,  name: "Nivel 2: Iniciado" },
+            3:  { cups: 4,  speed: 430, swaps: 9,  name: "Nivel 3: Aficionado" },
+            4:  { cups: 4,  speed: 340, swaps: 12, name: "Nivel 4: Intermedio" },
+            5:  { cups: 5,  speed: 270, swaps: 15, name: "Nivel 5: Avanzado" },
+            6:  { cups: 5,  speed: 210, swaps: 18, name: "Nivel 6: Profesional" },
+            7:  { cups: 6,  speed: 170, swaps: 22, name: "Nivel 7: Experto" },
+            8:  { cups: 7,  speed: 140, swaps: 26, name: "Nivel 8: Maestro" },
+            9:  { cups: 8,  speed: 115, swaps: 30, name: "Nivel 9: Leyenda" },
+            10: { cups: 9,  speed: 90,  swaps: 35, name: "Nivel 10: Imposible" }
+        };
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Configuración de los 5 Niveles
-        const LEVEL_CONFIGS = {
-            1: { cups: 3, speed: 650, swaps: 5, name: "Nivel 1: Principiante" },
-            2: { cups: 4, speed: 500, swaps: 8, name: "Nivel 2: Aficionado" },
-            3: { cups: 5, speed: 380, swaps: 11, name: "Nivel 3: Avanzado" },
-            4: { cups: 6, speed: 280, swaps: 14, name: "Nivel 4: Experto" },
-            5: { cups: 7, speed: 190, swaps: 18, name: "Nivel 5: Maestro" }
-        };
-
-        // Estado Global del Juego
+        // Variables de estado del juego
         let currentLevel = 1;
-        let gameState = 'IDLE'; // 'IDLE', 'SHOWING', 'SHUFFLING', 'GUESSING', 'RESULT'
+        let gameState = 'IDLE'; // Estados: 'IDLE', 'SHOWING', 'SHUFFLING', 'GUESSING', 'RESULT'
         let cups = [];
-        let stoneIndex = 0; // Índice de la posición del vaso que tiene la piedra
-        let currentSwapIndex = 0;
-        let swapQueue = [];
+        let stoneIndex = 0;     // Posición real del vaso que contiene la piedra
+        let swapQueue = [];      // Cola con la secuencia aleatoria de intercambios
         let streak = 0;
         let bestStreak = 0;
 
-        // Variables de Animación de Intercambio
-        let activeSwap = null; // { cupA, cupB, startTime, duration, arcDirection }
+        // Variables para controlar la animación del intercambio actual
+        let activeSwap = null; 
+        let slotPositions = []; // Mapeo de coordenadas X para cada ranura de la mesa
 
-        // Mapeo de Posiciones de los Vasos
-        let slotPositions = [];
-
+        /* ==========================================================================
+           CLASE CUP (Vasos)
+           --------------------------------------------------------------------------
+           Maneja el dibujo, la elevación y las coordenadas de cada vaso.
+           ========================================================================== */
         class Cup {
             constructor(id) {
                 this.id = id;
                 this.x = 0;
                 this.y = 0;
-                this.liftY = 0; // Para animación de destape / levantar
-                this.scale = 1.0;
-                this.isHighlighted = false;
+                this.liftY = 0; // Desplazamiento vertical cuando el vaso se destapa
             }
 
-            draw(ctx, width, height) {
-                const cupWidth = Math.min(width / (cups.length + 1.2), 95);
+            draw(ctx, width) {
+                // Cálculo dinámico del tamaño del vaso para ajustarse horizontalmente según la cantidad
+                const numCups = cups.length;
+                const cupWidth = Math.min(width / (numCups + 1.2), 85);
                 const cupHeight = cupWidth * 1.25;
                 const drawY = this.y - this.liftY;
 
                 ctx.save();
                 ctx.translate(this.x, drawY);
 
-                // Sombra del vaso en la mesa
+                // 1. Sombra sobre la mesa (disminuye en opacidad si el vaso se eleva)
                 ctx.beginPath();
                 const shadowY = this.y + cupHeight / 2 - drawY;
                 const shadowAlpha = Math.max(0.05, 0.35 - (this.liftY / 250));
-                ctx.ellipse(0, shadowY, (cupWidth / 2) * (1 + this.liftY / 300), 12, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, shadowY, (cupWidth / 2) * (1 + this.liftY / 300), 10, 0, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(0, 0, 0, ${shadowAlpha})`;
                 ctx.fill();
 
-                // Cuerpo del Vaso (Gradiente Metálico / Neón Pulido)
+                // 2. Gradiente metálico rojo/naranja elegante para el vaso
                 const grad = ctx.createLinearGradient(-cupWidth / 2, 0, cupWidth / 2, 0);
-                grad.addColorStop(0, '#c2410c');
-                grad.addColorStop(0.3, '#f97316');
-                grad.addColorStop(0.6, '#fb923c');
-                grad.addColorStop(1, '#9a3412');
+                grad.addColorStop(0, '#9a3412');
+                grad.addColorStop(0.3, '#ea580c');
+                grad.addColorStop(0.7, '#f97316');
+                grad.addColorStop(1, '#7c2d12');
 
-                // Forma Trapezoidal del Vaso
+                // 3. Dibujo de la geometría trapezoidal del vaso
                 ctx.beginPath();
-                ctx.moveTo(-cupWidth / 2 * 0.72, -cupHeight / 2); // Borde superior
+                ctx.moveTo(-cupWidth / 2 * 0.72, -cupHeight / 2);
                 ctx.lineTo(cupWidth / 2 * 0.72, -cupHeight / 2);
-                ctx.lineTo(cupWidth / 2, cupHeight / 2 - 8);     // Borde inferior
-                ctx.quadraticCurveTo(cupWidth / 2, cupHeight / 2, cupWidth / 2 - 8, cupHeight / 2);
-                ctx.lineTo(-cupWidth / 2 + 8, cupHeight / 2);
-                ctx.quadraticCurveTo(-cupWidth / 2, cupHeight / 2, -cupWidth / 2, cupHeight / 2 - 8);
+                ctx.lineTo(cupWidth / 2, cupHeight / 2 - 6);
+                ctx.quadraticCurveTo(cupWidth / 2, cupHeight / 2, cupWidth / 2 - 6, cupHeight / 2);
+                ctx.lineTo(-cupWidth / 2 + 6, cupHeight / 2);
+                ctx.quadraticCurveTo(-cupWidth / 2, cupHeight / 2, -cupWidth / 2, cupHeight / 2 - 6);
                 ctx.closePath();
 
                 ctx.fillStyle = grad;
                 ctx.fill();
 
-                // Borde de adorno / Anillos del Vaso
-                ctx.lineWidth = 3;
-                ctx.strokeStyle = '#ea580c';
+                // Borde exterior
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#c2410c';
                 ctx.stroke();
 
-                // Brillo especular superior
+                // Detalle superior del vaso
                 ctx.beginPath();
-                ctx.ellipse(0, -cupHeight / 2, cupWidth / 2 * 0.72, 6, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, -cupHeight / 2, cupWidth / 2 * 0.72, 5, 0, 0, Math.PI * 2);
                 ctx.fillStyle = '#ffedd5';
                 ctx.fill();
-
-                // Anillo inferior de la base
-                ctx.beginPath();
-                ctx.ellipse(0, cupHeight / 2 - 4, cupWidth / 2 - 4, 5, 0, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(0,0,0,0.25)';
-                ctx.fill();
-
-                // Resplandor si está seleccionado
-                if (this.isHighlighted) {
-                    ctx.strokeStyle = '#f59e0b';
-                    ctx.lineWidth = 4;
-                    ctx.stroke();
-                }
 
                 ctx.restore();
             }
 
-            // Devuelve el área interactiva (Bounding Box)
+            // Devuelve el área de interacción para detectar clics en la pantalla
             getBounds(width) {
-                const cupWidth = Math.min(width / (cups.length + 1.2), 95);
+                const cupWidth = Math.min(width / (cups.length + 1.2), 85);
                 const cupHeight = cupWidth * 1.25;
                 return {
                     left: this.x - cupWidth / 2,
@@ -302,49 +323,50 @@
             }
         }
 
+        /* ==========================================================================
+           DIBUJO DE LA PIEDRA (MATE SIN BRILLOS)
+           --------------------------------------------------------------------------
+           Diseñada intencionalmente con tonos grises y sombras suaves sin destellos
+           ni resplandores neón para evitar ventajas de rastreo.
+           ========================================================================== */
         function drawStone(x, y, width) {
-            const cupWidth = Math.min(width / (cups.length + 1.2), 95);
-            const radius = Math.max(12, cupWidth * 0.22);
+            const cupWidth = Math.min(width / (cups.length + 1.2), 85);
+            const radius = Math.max(10, cupWidth * 0.20);
 
             ctx.save();
-            ctx.translate(x, y + cupWidth * 0.4);
+            ctx.translate(x, y + cupWidth * 0.38);
 
-            // Sombra de la piedra
+            // Sombra leve de la piedra
             ctx.beginPath();
-            ctx.ellipse(0, radius * 0.6, radius, radius * 0.35, 0, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.ellipse(0, radius * 0.5, radius * 0.9, radius * 0.3, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
             ctx.fill();
 
-            // Resplandor de la piedra
-            const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, radius * 2);
-            glow.addColorStop(0, 'rgba(59, 130, 246, 0.6)');
-            glow.addColorStop(1, 'rgba(59, 130, 246, 0)');
-            ctx.beginPath();
-            ctx.arc(0, 0, radius * 2, 0, Math.PI * 2);
-            ctx.fillStyle = glow;
-            ctx.fill();
-
-            // Cuerpo Facetado de la Piedra (Gema Azul)
-            const stoneGrad = ctx.createRadialGradient(-radius * 0.3, -radius * 0.3, 2, 0, 0, radius);
-            stoneGrad.addColorStop(0, '#93c5fd');
-            stoneGrad.addColorStop(0.4, '#3b82f6');
-            stoneGrad.addColorStop(0.8, '#1d4ed8');
-            stoneGrad.addColorStop(1, '#1e3a8a');
+            // Gradiente sobrio estilo piedra rugosa/mate
+            const stoneGrad = ctx.createRadialGradient(-radius * 0.2, -radius * 0.2, 1, 0, 0, radius);
+            stoneGrad.addColorStop(0, '#78716c'); // Gris piedra claro
+            stoneGrad.addColorStop(0.5, '#57534e'); // Gris piedra medio
+            stoneGrad.addColorStop(1, '#292524'); // Gris oscuro
 
             ctx.beginPath();
             ctx.arc(0, 0, radius, 0, Math.PI * 2);
             ctx.fillStyle = stoneGrad;
             ctx.fill();
 
-            // Brillo blanco cristalino
-            ctx.beginPath();
-            ctx.ellipse(-radius * 0.35, -radius * 0.35, radius * 0.3, radius * 0.18, -Math.PI / 4, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-            ctx.fill();
+            // Textura sutil y contorno apagado
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#1c1917';
+            ctx.stroke();
 
             ctx.restore();
         }
 
+        /* ==========================================================================
+           LÓGICA DE DIMENSIONAMIENTO RESPONSIVO
+           --------------------------------------------------------------------------
+           Ajusta dinámicamente las coordenadas y tamaños de los elementos en el
+           canvas al cambiar el tamaño de la ventana o del dispositivo.
+           ========================================================================== */
         function resizeCanvas() {
             const rect = canvas.parentElement.getBoundingClientRect();
             canvas.width = rect.width;
@@ -359,7 +381,7 @@
                 slotPositions.push((i + 1) * spacing);
             }
 
-            // Reposicionar vasos instantáneamente si no se están animando
+            // Recolocar los vasos en sus posiciones fijas si no hay animación activa
             if (cups.length === numCups && !activeSwap) {
                 cups.forEach((cup, idx) => {
                     cup.x = slotPositions[idx];
@@ -368,7 +390,29 @@
             }
         }
 
-        // Initialize Level Cups Structure
+        // Genera visualmente los 10 botones de nivel en la barra superior
+        function buildLevelButtons() {
+            const container = document.getElementById('level-buttons-container');
+            container.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const conf = LEVEL_CONFIGS[i];
+                const btn = document.createElement('button');
+                btn.dataset.level = i;
+                btn.className = `level-btn flex-1 min-w-[75px] py-1.5 px-2 text-center rounded-xl font-bold text-xs transition border ${
+                    i === currentLevel 
+                    ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md' 
+                    : 'bg-slate-800/80 text-slate-400 border-slate-700/60 hover:bg-slate-700'
+                }`;
+                btn.innerHTML = `Nivel ${i}<span class="block text-[9px] font-normal opacity-80">${conf.cups} Vasos</span>`;
+                btn.onclick = () => {
+                    if (gameState === 'SHUFFLING' || gameState === 'SHOWING') return;
+                    initLevel(i);
+                };
+                container.appendChild(btn);
+            }
+        }
+
+        // Inicializa un nivel específico
         function initLevel(level) {
             currentLevel = level;
             const config = LEVEL_CONFIGS[level];
@@ -378,25 +422,18 @@
                 cups.push(new Cup(i));
             }
 
-            // Asignar aleatoriamente la piedra a un vaso
+            // Seleccionar aleatoriamente qué vaso albergará la piedra
             stoneIndex = Math.floor(Math.random() * config.cups);
 
             // Actualizar interfaz
             document.getElementById('level-title').textContent = config.name;
-            document.querySelectorAll('.level-btn').forEach(btn => {
-                const btnLevel = parseInt(btn.dataset.level);
-                if (btnLevel === level) {
-                    btn.className = "level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-amber-500 text-zinc-950 shadow-md";
-                } else {
-                    btn.className = "level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-zinc-800 text-zinc-400 hover:bg-zinc-700";
-                }
-            });
+            buildLevelButtons();
 
             gameState = 'IDLE';
             document.getElementById('result-modal').classList.add('hidden');
             document.getElementById('start-btn').disabled = false;
             document.getElementById('start-btn').classList.remove('opacity-50', 'cursor-not-allowed');
-            updateStatusBanner('Presiona "¡Iniciar Mezcla!" para ver dónde está la piedra');
+            updateStatusBanner('Presiona "¡Iniciar Mezcla!" para ver la piedra');
 
             resizeCanvas();
         }
@@ -405,6 +442,7 @@
             document.getElementById('status-banner').textContent = text;
         }
 
+        // Genera la secuencia aleatoria de intercambios entre vasos
         function generateSwapQueue() {
             const config = LEVEL_CONFIGS[currentLevel];
             const queue = [];
@@ -424,6 +462,7 @@
             return queue;
         }
 
+        // Inicia el juego (muestra la piedra primero y luego comienza la mezcla)
         function startGame() {
             if (gameState !== 'IDLE') return;
 
@@ -434,34 +473,30 @@
 
             updateStatusBanner('¡Memoriza la posición de la piedra!');
 
-            // Animación: Levantamos el vaso con la piedra
+            // Animación para revelar la piedra levantando el vaso
             const targetCup = cups[stoneIndex];
             sounds.playLift();
 
             let startTime = null;
-            const liftDuration = 600;
-            const holdDuration = 1000;
+            const liftDuration = 550;
+            const holdDuration = 900;
 
             function animateLift(timestamp) {
                 if (!startTime) startTime = timestamp;
                 const elapsed = timestamp - startTime;
 
                 if (elapsed < liftDuration) {
-                    // Subiendo vaso
-                    targetCup.liftY = (elapsed / liftDuration) * 80;
+                    targetCup.liftY = (elapsed / liftDuration) * 75;
                     requestAnimationFrame(animateLift);
                 } else if (elapsed < liftDuration + holdDuration) {
-                    // Mantener arriba
-                    targetCup.liftY = 80;
+                    targetCup.liftY = 75;
                     requestAnimationFrame(animateLift);
                 } else if (elapsed < liftDuration * 2 + holdDuration) {
-                    // Bajando vaso
                     const dropProgress = (elapsed - liftDuration - holdDuration) / liftDuration;
-                    targetCup.liftY = 80 * (1 - dropProgress);
+                    targetCup.liftY = 75 * (1 - dropProgress);
                     requestAnimationFrame(animateLift);
                 } else {
                     targetCup.liftY = 0;
-                    // Comenzar mezcla inmediatamente
                     startShuffle();
                 }
             }
@@ -469,17 +504,21 @@
             requestAnimationFrame(animateLift);
         }
 
-        // Preparar e iniciar la fase de intercambio / Shuffle
+        /* ==========================================================================
+           LÓGICA DE MEZCLA CON ARCOS 3D E INTERPOLACIÓN MATEMÁTICA
+           --------------------------------------------------------------------------
+           Ejecuta los intercambios calculando posiciones con funciones de onda
+           senoidal para simular que un vaso pasa por enfrente y el otro por detrás.
+           ========================================================================== */
         function startShuffle() {
             gameState = 'SHUFFLING';
-            updateStatusBanner('¡Sigue el vaso con la mirada! Mezclando...');
+            updateStatusBanner('¡Mezclando vasos! Sigue la piedra con la mirada');
             swapQueue = generateSwapQueue();
             executeNextSwap();
         }
 
         function executeNextSwap() {
             if (swapQueue.length === 0) {
-                // Finalizó el shuffling
                 gameState = 'GUESSING';
                 updateStatusBanner('¡¿Dónde está la piedra?! Haz clic sobre un vaso');
                 return;
@@ -490,11 +529,11 @@
             const cupB = cups[idxB];
             const config = LEVEL_CONFIGS[currentLevel];
 
-            // Si intercambio involucra al vaso con la piedra, actualizar el índice
+            // Si el intercambio involucra al vaso que contiene la piedra, actualizamos la referencia interna
             if (stoneIndex === idxA) stoneIndex = idxB;
             else if (stoneIndex === idxB) stoneIndex = idxA;
 
-            // Reorganizar el array de objetos en Javascript para mantener concordancia
+            // Reordenamos el array de vasos
             cups[idxA] = cupB;
             cups[idxB] = cupA;
 
@@ -520,47 +559,50 @@
             const elapsed = now - activeSwap.startTime;
             const progress = Math.min(elapsed / activeSwap.duration, 1.0);
 
-            // Función de atenuación suave (Easing function: Smoothstep / Sine)
+            // Interpolación Suave Cosinusoidal (Easing Ease-In-Out)
             const ease = 0.5 - Math.cos(progress * Math.PI) / 2;
 
-            // Trayectoria Horizontal
+            // Posición X
             activeSwap.cupA.x = activeSwap.startX_A + (activeSwap.targetX_A - activeSwap.startX_A) * ease;
             activeSwap.cupB.x = activeSwap.startX_B + (activeSwap.targetX_B - activeSwap.startX_B) * ease;
 
-            // Arqueado Vertical para simular cruce en 3D (Uno pasa por delante/arriba y otro por atrás/abajo)
-            const arcHeight = 35 * Math.sin(progress * Math.PI);
+            // Curva de Arco Vertical (Simula profundidad 3D)
+            const arcHeight = 30 * Math.sin(progress * Math.PI);
             activeSwap.cupA.y = (canvas.height * 0.62) - arcHeight;
-            activeSwap.cupB.y = (canvas.height * 0.62) + (arcHeight * 0.6);
+            activeSwap.cupB.y = (canvas.height * 0.62) + (arcHeight * 0.5);
 
             if (progress < 1.0) {
                 requestAnimationFrame(animateSwapStep);
             } else {
-                // Final de este swap individual
+                // Final de este paso de intercambio
                 activeSwap.cupA.x = activeSwap.targetX_A;
                 activeSwap.cupB.x = activeSwap.targetX_B;
                 activeSwap.cupA.y = canvas.height * 0.62;
                 activeSwap.cupB.y = canvas.height * 0.62;
                 activeSwap = null;
 
-                // Continuar con el siguiente intercambio
                 executeNextSwap();
             }
         }
 
+        /* ==========================================================================
+           BUCLE DE RENDERIZADO PRINCIPAL (60 FPS / RequestAnimationFrame)
+           ========================================================================== */
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Dibujar la piedra en la posición del vaso correspondiente (solo se ve si el vaso está levantado)
+            // Renderizar la piedra
             if (cups[stoneIndex]) {
                 drawStone(cups[stoneIndex].x, cups[stoneIndex].y, canvas.width);
             }
 
-            // Dibujar todos los vasos
-            cups.forEach(cup => cup.draw(ctx, canvas.width, canvas.height));
+            // Renderizar los vasos
+            cups.forEach(cup => cup.draw(ctx, canvas.width));
 
             requestAnimationFrame(render);
         }
 
+        // Manejo de clics/toques sobre los vasos para adivinar
         function handleCanvasClick(e) {
             if (gameState !== 'GUESSING') return;
 
@@ -568,7 +610,6 @@
             const clickX = e.clientX - rect.left;
             const clickY = e.clientY - rect.top;
 
-            // Detectar en qué vaso se hizo clic
             for (let i = 0; i < cups.length; i++) {
                 const bounds = cups[i].getBounds(canvas.width);
                 if (clickX >= bounds.left && clickX <= bounds.right && clickY >= bounds.top && clickY <= bounds.bottom) {
@@ -578,6 +619,7 @@
             }
         }
 
+        // Procesa la elección del jugador
         function processGuess(selectedIndex) {
             gameState = 'RESULT';
             sounds.init();
@@ -588,22 +630,20 @@
 
             sounds.playLift();
 
-            // Elevar el vaso seleccionado
             let startTime = null;
             function animateReveal(timestamp) {
                 if (!startTime) startTime = timestamp;
                 const elapsed = timestamp - startTime;
 
-                if (elapsed < 500) {
-                    selectedCup.liftY = (elapsed / 500) * 80;
-                    if (!isCorrect && elapsed > 250) {
-                        // Si falló, también destapar gradualmente el correcto para mostrar dónde estaba
-                        realStoneCup.liftY = ((elapsed - 250) / 250) * 80;
+                if (elapsed < 450) {
+                    selectedCup.liftY = (elapsed / 450) * 75;
+                    if (!isCorrect && elapsed > 200) {
+                        realStoneCup.liftY = ((elapsed - 200) / 250) * 75;
                     }
                     requestAnimationFrame(animateReveal);
                 } else {
-                    selectedCup.liftY = 80;
-                    if (!isCorrect) realStoneCup.liftY = 80;
+                    selectedCup.liftY = 75;
+                    if (!isCorrect) realStoneCup.liftY = 75;
                     showResultModal(isCorrect);
                 }
             }
@@ -611,6 +651,7 @@
             requestAnimationFrame(animateReveal);
         }
 
+        // Muestra el panel de resultados
         function showResultModal(isWin) {
             const modal = document.getElementById('result-modal');
             const title = document.getElementById('result-title');
@@ -635,17 +676,17 @@
                 streak++;
                 if (streak > bestStreak) bestStreak = streak;
 
-                if (currentLevel < 5) {
+                if (currentLevel < 10) {
                     nextBtn.classList.remove('hidden');
                 } else {
                     nextBtn.classList.add('hidden');
-                    desc.textContent = "¡Increíble! Has superado el Nivel 5 Maestro. ¡Eres imparable!";
+                    desc.textContent = "¡ENHORABUENA! Has completado los 10 Niveles del Juego.";
                 }
             } else {
                 sounds.playLose();
-                title.textContent = "¡Piedra Perdida!";
+                title.textContent = "¡Te equivocaste!";
                 title.className = "text-2xl sm:text-3xl font-extrabold text-rose-400 mb-2";
-                desc.textContent = "Te has distraído un segundo. ¡Inténtalo de nuevo!";
+                desc.textContent = "La velocidad te ha confundido. ¡Inténtalo de nuevo!";
                 
                 successIcon.classList.add('hidden');
                 failIcon.classList.remove('hidden');
@@ -659,6 +700,7 @@
             document.getElementById('best-streak').textContent = bestStreak;
         }
 
+        // Listeners de eventos de usuario e interfaz
         window.addEventListener('resize', resizeCanvas);
         canvas.addEventListener('click', handleCanvasClick);
 
@@ -669,28 +711,18 @@
         });
 
         document.getElementById('next-btn').addEventListener('click', () => {
-            if (currentLevel < 5) {
+            if (currentLevel < 10) {
                 initLevel(currentLevel + 1);
             }
         });
 
-        // Selector de Niveles
-        document.querySelectorAll('.level-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                if (gameState === 'SHUFFLING' || gameState === 'SHOWING') return;
-                const targetLevel = parseInt(e.currentTarget.dataset.level);
-                initLevel(targetLevel);
-            });
-        });
-
-        // Toggle Sonido
         document.getElementById('sound-btn').addEventListener('click', () => {
             sounds.muted = !sounds.muted;
             document.getElementById('sound-icon-on').classList.toggle('hidden', sounds.muted);
             document.getElementById('sound-icon-off').classList.toggle('hidden', !sounds.muted);
         });
 
-        // Arranque inicial
+        // Arranque inicial cuando la página carga por completo
         window.onload = () => {
             initLevel(1);
             requestAnimationFrame(render);
