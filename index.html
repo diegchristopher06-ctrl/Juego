@@ -3,498 +3,473 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Construction Catcher: Misiones del Ingeniero</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka+One&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <title>Construction Catcher - Misiones del Ingeniero</title>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
             user-select: none;
-            -webkit-user-select: none;
-            background-color: #0b0f19;
-        }
-        .font-pixel {
-            font-family: 'Press Start 2P', monospace;
-        }
-        .font-game {
-            font-family: 'Fredoka One', cursive, sans-serif;
         }
 
-        /* Cartel de madera con bisel y relieve en CSS */
-        .wood-panel {
-            background: linear-gradient(180deg, #9a5323 0%, #6e3512 60%, #4a2108 100%);
-            border: 3px solid #2d1303;
-            box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25), inset 0 -3px 0 rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0,0,0,0.6);
-            border-radius: 12px;
-            text-shadow: 2px 2px 0px #2a1103;
+        body {
+            background-color: #12161a;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
         }
 
-        .wood-panel-sub {
-            background: linear-gradient(180deg, #2a170d 0%, #170a04 100%);
-            border: 2px solid #52270f;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
-        }
-
-        .dialogue-bubble {
-            background: #ffffff;
-            border: 3px solid #1e293b;
-            color: #0f172a;
+        #game-container {
             position: relative;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-        }
-
-        .dialogue-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -14px;
-            right: 28px;
-            border-width: 14px 12px 0;
-            border-style: solid;
-            border-color: #ffffff transparent;
-            display: block;
-            width: 0;
-        }
-
-        .dialogue-bubble::before {
-            content: '';
-            position: absolute;
-            bottom: -18px;
-            right: 26px;
-            border-width: 16px 14px 0;
-            border-style: solid;
-            border-color: #1e293b transparent;
-            display: block;
-            width: 0;
+            width: 900px;
+            height: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 4px solid #d4a359;
+            background: #000;
         }
 
         canvas {
-            touch-action: none;
-            image-rendering: pixelated;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Capas de Interfaz (HUD y Menús) */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15px;
+        }
+
+        .hud-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .hud-card {
+            background: linear-gradient(135deg, #2b1f1d, #422f28);
+            border: 2px solid #d4a359;
+            border-radius: 8px;
+            padding: 8px 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        .hud-title {
+            font-size: 11px;
+            color: #d4a359;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .hud-value {
+            font-size: 20px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .mission-panel {
+            background: rgba(20, 15, 12, 0.88);
+            border: 2px solid #ffb703;
+            border-radius: 10px;
+            padding: 10px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 320px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.7);
+        }
+
+        .mission-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mission-title {
+            color: #ffb703;
+            font-size: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .mission-targets {
+            display: flex;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .target-badge {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: bold;
+        }
+
+        .target-badge.complete {
+            background: rgba(40, 167, 69, 0.3);
+            border-color: #28a745;
+            color: #85e89d;
+        }
+
+        /* Modales */
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 12, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .modal-title {
+            font-size: 38px;
+            color: #ffb703;
+            text-shadow: 3px 3px 0px #804b00, 0 0 15px rgba(255,183,3,0.4);
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .modal-subtitle {
+            font-size: 16px;
+            color: #ccc;
+            margin-bottom: 25px;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(180deg, #ffb703, #fb8500);
+            color: #000;
+            border: none;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #b35900, 0 8px 15px rgba(0,0,0,0.4);
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #b35900, 0 10px 18px rgba(0,0,0,0.4);
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #b35900;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(180deg, #4a5568, #2d3748);
+            color: #fff;
+            box-shadow: 0 5px 0 #1a202c;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 7px 0 #1a202c;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .hearts {
+            color: #ff4d4d;
+            font-size: 20px;
+            letter-spacing: 2px;
         }
     </style>
 </head>
-<body class="min-h-screen text-white flex flex-col items-center justify-center p-2 sm:p-4">
+<body>
 
-    <!-- CONTENEDOR PRINCIPAL DEL JUEGO -->
-    <div class="relative w-full max-w-5xl bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border-4 border-amber-600">
-        
-        <!-- PANTALLA DE INICIO / PORTADA DE ALTA CALIDAD -->
-        <div id="pantallaInicio" class="absolute inset-0 z-40 flex flex-col items-center justify-between p-4 sm:p-8 bg-gradient-to-b from-sky-700 via-amber-900 to-slate-950 text-center">
-            
-            <!-- HEADER CON LOGOTIPO DE ESTILO ARCADE -->
-            <div class="mt-2 space-y-1">
-                <span class="inline-block bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-black text-xs sm:text-sm px-4 py-1 rounded-full uppercase tracking-wider shadow-lg border border-yellow-200">
-                    👷‍♂️ GitHub Pages Edition
-                </span>
-                <h1 class="font-pixel text-2xl sm:text-4xl md:text-5xl text-amber-400 drop-shadow-[0_5px_0_#4a2108] leading-tight uppercase tracking-wide">
-                    CONSTRUCTION<br><span class="text-white text-lg sm:text-3xl">CATCHER</span>
-                </h1>
-                <p class="font-game text-amber-200 text-sm sm:text-lg tracking-wider">MISIONES DEL INGENIERO</p>
-            </div>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="900" height="600"></canvas>
 
-            <!-- REGIONAL DE INSTRUCCIONES Y REGLAS -->
-            <div class="w-full max-w-2xl wood-panel p-4 sm:p-5 text-left text-xs sm:text-sm space-y-3 backdrop-blur-sm">
-                <div class="flex items-center gap-3">
-                    <span class="text-3xl bg-amber-500/20 p-2 rounded-xl border border-amber-400/40">👷‍♂️</span>
+        <!-- Capa UI durante el Juego -->
+        <div id="ui-layer" class="ui-layer hidden">
+            <div class="hud-top">
+                <div class="hud-card">
                     <div>
-                        <p class="font-game text-amber-300 text-base sm:text-lg">¡Orden directa del Ingeniero de Obra!</p>
-                        <p class="text-slate-100 text-xs sm:text-sm leading-relaxed">
-                            "Revisa el panel de la derecha. Te daré misiones específicas como hacer concreto o armar columnas. 
-                            Junta <b>ÚNICAMENTE los materiales indicados</b>. Si traes basura o materiales equivocados, restarás vidas."
-                        </p>
+                        <div class="hud-title">Puntos</div>
+                        <div id="score-val" class="hud-value">0</div>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-amber-800/80 text-xs font-semibold">
-                    <div class="text-emerald-300 flex items-center gap-1.5">
-                        <span>✅</span> Completa contadores por material
+
+                <div class="mission-panel">
+                    <div class="mission-header">
+                        <div class="hud-title">Ingeniero Dice:</div>
+                        <div id="difficulty-tag" style="font-size: 11px; color: #ffb703; font-weight: bold;">FÁCIL</div>
                     </div>
-                    <div class="text-rose-300 flex items-center gap-1.5">
-                        <span>❌</span> Evita plátanos, botellas y cactus
-                    </div>
+                    <div id="mission-desc" class="mission-title">¡Cargando Misión!</div>
+                    <div id="mission-targets" class="mission-targets"></div>
                 </div>
-            </div>
 
-            <!-- SELECTOR DE DIFICULTAD CON BOTONES CUIDADOS -->
-            <div class="w-full max-w-md bg-slate-950/80 p-3.5 rounded-xl border border-amber-600/50 shadow-xl">
-                <p class="text-xs font-pixel text-amber-400 mb-2.5 uppercase text-center">Selecciona Nivel de Dificultad</p>
-                <div class="grid grid-cols-3 gap-2.5">
-                    <button id="btnDificultadFacil" class="btn-dificultad py-2.5 rounded-lg font-pixel text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border-2 border-slate-700 cursor-pointer transition-all" data-dificultad="FACIL">
-                        🟢 FÁCIL
-                    </button>
-                    <button id="btnDificultadNormal" class="btn-dificultad py-2.5 rounded-lg font-pixel text-[11px] bg-amber-500 text-slate-950 font-black border-2 border-amber-300 cursor-pointer shadow-lg transition-all" data-dificultad="NORMAL">
-                        🟡 NORMAL
-                    </button>
-                    <button id="btnDificultadDificil" class="btn-dificultad py-2.5 rounded-lg font-pixel text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border-2 border-slate-700 cursor-pointer transition-all" data-dificultad="DIFICIL">
-                        🔴 DIFÍCIL
-                    </button>
-                </div>
-            </div>
-
-            <!-- BOTÓN JUGAR CON EFECTO DE PULSO -->
-            <button id="btnIniciar" class="w-full max-w-xs bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:brightness-110 text-slate-950 font-black font-game text-xl sm:text-2xl py-3.5 px-6 rounded-2xl shadow-2xl transform active:scale-95 transition-all border-b-4 border-amber-800 cursor-pointer uppercase tracking-wider">
-                ¡INICIAR OBRA!
-            </button>
-        </div>
-
-        <!-- PANTALLA DE GAME OVER -->
-        <div id="pantallaGameOver" class="hidden absolute inset-0 z-40 flex flex-col items-center justify-center p-6 bg-slate-950/95 backdrop-blur-md text-center">
-            <h2 class="font-pixel text-3xl sm:text-5xl text-rose-500 mb-3 drop-shadow-[0_4px_0_#4c0519]">¡OBRA SUSPENDIDA!</h2>
-            <p id="motivoGameOver" class="text-slate-300 font-game text-sm sm:text-lg mb-6 max-w-md">Has fallado las órdenes del Ingeniero.</p>
-            
-            <div class="wood-panel p-5 mb-6 w-full max-w-xs shadow-2xl">
-                <p class="text-amber-200 text-xs font-pixel uppercase tracking-wider mb-2">Puntuación Final</p>
-                <p id="puntajeFinal" class="font-pixel text-4xl text-amber-300 drop-shadow-md">0</p>
-            </div>
-
-            <button id="btnReiniciar" class="bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 text-slate-950 font-black font-game text-lg sm:text-xl py-3.5 px-8 rounded-xl shadow-xl transform active:scale-95 transition-all cursor-pointer border-b-4 border-amber-800">
-                REINTENTAR CONTRATO
-            </button>
-        </div>
-
-        <!-- PANEL SUPERIOR INTERACTIVO (HUD CON DISEÑO DE MADERA REFINADO) -->
-        <div class="bg-slate-950 p-2 sm:p-3 grid grid-cols-1 md:grid-cols-12 gap-2 border-b-4 border-amber-800">
-            
-            <!-- CONTADORES DE JUEGO (PUNTOS, VIDAS, DIFICULTAD) -->
-            <div class="md:col-span-5 grid grid-cols-3 gap-2">
-                <!-- Puntos -->
-                <div class="wood-panel p-1.5 sm:p-2 flex flex-col items-center justify-center">
-                    <span class="text-[9px] sm:text-[10px] font-pixel text-amber-300">PUNTOS</span>
-                    <span id="txtPuntos" class="font-pixel text-xs sm:text-base text-white">0</span>
-                </div>
-                <!-- Vidas -->
-                <div class="wood-panel p-1.5 sm:p-2 flex flex-col items-center justify-center">
-                    <span class="text-[9px] sm:text-[10px] font-pixel text-rose-300">VIDAS</span>
-                    <span id="txtVidas" class="text-xs sm:text-base tracking-tighter">❤️❤️❤️</span>
-                </div>
-                <!-- Dificultad -->
-                <div class="wood-panel p-1.5 sm:p-2 flex flex-col items-center justify-center">
-                    <span class="text-[9px] sm:text-[10px] font-pixel text-amber-200">MODO</span>
-                    <span id="txtModo" class="font-pixel text-[10px] sm:text-xs text-amber-400 font-bold">NORMAL</span>
-                </div>
-            </div>
-
-            <!-- TABLERO DE MISIÓN DEL INGENIERO CON TARJETAS DE OBJETIVOS -->
-            <div class="md:col-span-7 bg-slate-900 border-2 border-amber-600/70 rounded-xl p-2 flex flex-col sm:flex-row items-center justify-between gap-2 shadow-inner">
-                <div class="flex items-center gap-2 text-left w-full sm:w-auto">
-                    <div class="w-10 h-10 rounded-lg bg-amber-500/20 border border-amber-400 flex items-center justify-center text-2xl flex-shrink-0">
-                        👷‍♂️
-                    </div>
+                <div class="hud-card">
                     <div>
-                        <span class="text-[9px] font-pixel text-amber-400 uppercase tracking-wider block">Misión Actual:</span>
-                        <h3 id="txtTituloMision" class="font-game text-xs sm:text-sm text-white leading-snug">Cargando misión...</h3>
+                        <div class="hud-title">Vidas</div>
+                        <div id="lives-val" class="hearts">♥♥♥</div>
                     </div>
-                </div>
-
-                <!-- CONTADORES INDIVIDUALES DE OBJETOS REQUERIDOS -->
-                <div id="contenedorObjetivos" class="flex items-center gap-1.5 flex-wrap justify-end w-full sm:w-auto">
-                    <!-- Inserción dinámica de miniaturas con cantidades -->
                 </div>
             </div>
         </div>
 
-        <!-- CANVAS DEL JUEGO CON RENDERIZADO VECTORIAL -->
-        <div class="relative w-full aspect-[16/9] bg-slate-950 overflow-hidden">
-            <canvas id="gameCanvas" class="w-full h-full block"></canvas>
+        <!-- Pantalla Inicio -->
+        <div id="start-modal" class="modal">
+            <h1 class="modal-title">CONSTRUCTION CATCHER</h1>
+            <p class="modal-subtitle">Sigue atentamente las órdenes del Ingeniero. Recoge únicamente los materiales solicitados para la obra y evita la basura.</p>
+            
+            <div style="margin-bottom: 20px; text-align: center;">
+                <label style="color: #ffb703; font-weight: bold; margin-bottom: 8px; display: block;">SELECCIONA LA DIFICULTAD:</label>
+                <div class="btn-group">
+                    <button class="btn btn-secondary diff-btn" data-diff="facil" style="border: 2px solid #28a745;">Fácil</button>
+                    <button class="btn diff-btn" data-diff="normal" style="border: 2px solid #ffb703;">Normal</button>
+                    <button class="btn btn-secondary diff-btn" data-diff="dificil" style="border: 2px solid #dc3545;">Difícil</button>
+                </div>
+            </div>
+
+            <button id="start-btn" class="btn" style="font-size: 20px; padding: 15px 40px;">¡INICIAR OBRA!</button>
         </div>
 
-        <!-- CONTROLES TÁCTILES MÓVILES -->
-        <div class="sm:hidden bg-slate-950 p-2 flex justify-between items-center gap-2 border-t-2 border-slate-800">
-            <button id="btnIzquierda" class="flex-1 bg-gradient-to-b from-slate-700 to-slate-800 active:from-amber-500 active:to-amber-600 text-white font-game py-3 rounded-xl text-lg shadow-md border border-slate-600 select-none">
-                ⬅ IZQUIERDA
-            </button>
-            <button id="btnDerecha" class="flex-1 bg-gradient-to-b from-slate-700 to-slate-800 active:from-amber-500 active:to-amber-600 text-white font-game py-3 rounded-xl text-lg shadow-md border border-slate-600 select-none">
-                DERECHA ➡️
-            </button>
+        <!-- Pantalla Game Over -->
+        <div id="gameover-modal" class="modal hidden">
+            <h1 class="modal-title" style="color: #ff4d4d; text-shadow: 3px 3px 0px #800000;">¡DESPEDIDO DE LA OBRA!</h1>
+            <p class="modal-subtitle" id="gameover-reason">Cometiste demasiados errores o recogiste el material equivocado.</p>
+            <div style="font-size: 22px; color: #fff; margin-bottom: 20px;">Puntaje Final: <span id="final-score" style="color: #ffb703; font-weight: bold;">0</span></div>
+            <button id="restart-btn" class="btn">REINTENTAR</button>
         </div>
     </div>
 
-    <!-- SCRIPT PRINCIPAL: POO COMPLETA, VECTOR GRAPHICS Y PARTÍCULAS -->
     <script>
-        // =========================================================================
-        // CONSTANTES Y CONFIGURACIÓN INICIAL DEL CANVAS
-        // =========================================================================
+        /**
+         * ============================================================================
+         * GUÍA PARA EL EXAMEN:
+         * 1. Clase 'Mision': Define qué materiales requiere el Ingeniero y cuántos faltan.
+         * 2. Clase 'Albanil': Controla al jugador, movimiento de carretilla y renderizado.
+         * 3. Clase 'Item': Administra los objetos (materiales y basura) que caen.
+         * 4. Clase 'Juego': Bucle principal (Game Loop), colisiones y estados del juego.
+         * ============================================================================
+         */
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Dimensiones HD virtuales (aspect ratio 16:9)
-        const ANCHO_CANVAS = 960;
-        const ALTO_CANVAS = 540;
-        canvas.width = ANCHO_CANVAS;
-        canvas.height = ALTO_CANVAS;
-
-        // Referencias del DOM
-        const txtPuntos = document.getElementById('txtPuntos');
-        const txtVidas = document.getElementById('txtVidas');
-        const txtModo = document.getElementById('txtModo');
-        const txtTituloMision = document.getElementById('txtTituloMision');
-        const contenedorObjetivos = document.getElementById('contenedorObjetivos');
-        const pantallaInicio = document.getElementById('pantallaInicio');
-        const pantallaGameOver = document.getElementById('pantallaGameOver');
-        const puntajeFinal = document.getElementById('puntajeFinal');
-        const motivoGameOver = document.getElementById('motivoGameOver');
-        const btnIniciar = document.getElementById('btnIniciar');
-        const btnReiniciar = document.getElementById('btnReiniciar');
-
-        // =========================================================================
-        // CATÁLOGO COMPLETO DE MATERIALES Y BASURA CON RENDER VECTORIAL DEDICADO
-        // =========================================================================
-        const CATALOGO_ITEMS = {
-            CEMENTO: { id: 'CEMENTO', nombre: 'Cemento', esBasura: false, color: '#94a3b8' },
-            LADRILLO: { id: 'LADRILLO', nombre: 'Ladrillo', esBasura: false, color: '#b91c1c' },
-            ARENA: { id: 'ARENA', nombre: 'Saco Arena', esBasura: false, color: '#eab308' },
-            GRAVA: { id: 'GRAVA', nombre: 'Cubeta Grava', esBasura: false, color: '#64748b' },
-            VARILLA: { id: 'VARILLA', nombre: 'Varilla', esBasura: false, color: '#334155' },
+        // --- CATÁLOGO DE MATERIALES Y BASURA ---
+        const TIPOS_ITEMS = {
+            // Materiales Válidos
+            ladrillo: { nombre: 'Ladrillo', esMaterial: true, color: '#c1440e' },
+            cemento:  { nombre: 'Cemento',  esMaterial: true, color: '#a8a8a8' },
+            agua:     { nombre: 'Agua',     esMaterial: true, color: '#3182ce' },
+            grava:    { nombre: 'Grava',    esMaterial: true, color: '#718096' },
+            varilla:  { nombre: 'Varilla',  esMaterial: true, color: '#4a5568' },
             
-            // BASURA
-            PLATANO: { id: 'PLATANO', nombre: 'Cáscara Plátano', esBasura: true, color: '#facc15' },
-            BOTELLA: { id: 'BOTELLA', nombre: 'Botella Rota', esBasura: true, color: '#15803d' },
-            PELOTA: { id: 'PELOTA', nombre: 'Pelota', esBasura: true, color: '#ef4444' },
-            CACTUS: { id: 'CACTUS', nombre: 'Cactus Maceta', esBasura: true, color: '#22c55e' }
+            // Basura / Distractores
+            platano:  { nombre: 'Plátano',  esMaterial: false, color: '#ecc94b' },
+            botella:  { nombre: 'Botella',  esMaterial: false, color: '#38a169' },
+            pelota:   { nombre: 'Pelota',   esMaterial: false, color: '#e53e3e' },
+            lata:     { nombre: 'Lata',     esMaterial: false, color: '#dd6b20' }
         };
 
-        // =========================================================================
-        // CLASE 1: Particula
-        // Genera destellos al atrapar materiales y polvo al agarrar basura.
-        // =========================================================================
-        class Particula {
-            constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
-                this.color = color;
-                this.radio = Math.random() * 4 + 2;
-                this.vx = (Math.random() - 0.5) * 6;
-                this.vy = (Math.random() - 0.5) * 6 - 2;
-                this.vida = 1.0;
-                this.degrade = Math.random() * 0.04 + 0.02;
-            }
-
-            actualizar() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.vy += 0.15; // Gravedad
-                this.vida -= this.degrade;
-            }
-
-            dibujar(contexto) {
-                contexto.save();
-                contexto.globalAlpha = Math.max(0, this.vida);
-                contexto.fillStyle = this.color;
-                contexto.beginPath();
-                contexto.arc(this.x, this.y, this.radio, 0, Math.PI * 2);
-                contexto.fill();
-                contexto.restore();
-            }
-        }
-
-        // =========================================================================
-        // CLASE 2: Mision
-        // Administra las misiones multiobjetivo con conteo individual de ítems.
-        // =========================================================================
+        // --- CLASE MISIÓN ---
         class Mision {
-            constructor(titulo, requerimientos) {
+            constructor(titulo, requeridos) {
                 this.titulo = titulo;
-                // requerimientos: objeto tipo { LADRILLO: { pedido: 5, recolectado: 0 }, CEMENTO: ... }
-                this.requerimientos = requerimientos;
+                this.requeridos = { ...requeridos }; // Objeto ej: { ladrillo: 5, cemento: 3 }
+                this.recolectados = {};
+                for (let k in requeridos) this.recolectados[k] = 0;
             }
 
-            esMaterialRequerido(itemId) {
-                return this.requerimientos.hasOwnProperty(itemId);
+            // Verifica si el ítem atraído sirve para esta misión
+            esNecesario(tipo) {
+                return (tipo in this.requeridos) && (this.recolectados[tipo] < this.requeridos[tipo]);
             }
 
-            registrarRecolectado(itemId) {
-                if (this.esMaterialRequerido(itemId)) {
-                    const req = this.requerimientos[itemId];
-                    if (req.recolectado < req.pedido) {
-                        req.recolectado++;
-                        return true;
-                    }
+            // Registra la recolección
+            registrar(tipo) {
+                if (this.esNecesario(tipo)) {
+                    this.recolectados[tipo]++;
+                    return true;
                 }
                 return false;
             }
 
+            // Revisa si la misión ya fue completada
             estaCompletada() {
-                for (let key in this.requerimientos) {
-                    if (this.requerimientos[key].recolectado < this.requerimientos[key].pedido) {
-                        return false;
-                    }
+                for (let k in this.requeridos) {
+                    if (this.recolectados[k] < this.requeridos[k]) return false;
                 }
                 return true;
             }
         }
 
-        // BANCO DE MISIONES DINÁMICAS
-        const FABRICA_MISIONES = [
-            () => new Mision("¡Levantar Pared de Ladrillo!", {
-                LADRILLO: { pedido: 5, recolectado: 0 },
-                CEMENTO: { pedido: 3, recolectado: 0 }
-            }),
-            () => new Mision("¡Mezcla de Concreto!", {
-                CEMENTO: { pedido: 4, recolectado: 0 },
-                ARENA: { pedido: 3, recolectado: 0 },
-                GRAVA: { pedido: 3, recolectado: 0 }
-            }),
-            () => new Mision("¡Armar Columnas y Vigas!", {
-                VARILLA: { pedido: 4, recolectado: 0 },
-                CEMENTO: { pedido: 3, recolectado: 0 }
-            }),
-            () => new Mision("¡Cimentación Completa!", {
-                GRAVA: { pedido: 4, recolectado: 0 },
-                LADRILLO: { pedido: 4, recolectado: 0 }
-            })
+        // BANCO DE MISIONES DISPONIBLES
+        const LISTA_MISIONES = [
+            () => new Mision("¡Levantar Pared de Ladrillo!", { ladrillo: 5, cemento: 3 }),
+            () => new Mision("¡Preparar Mezcla de Concreto!", { cemento: 4, agua: 3, grava: 4 }),
+            () => new Mision("¡Cimentación de Columnas!", { varilla: 4, cemento: 4, agua: 2 }),
+            () => new Mision("¡Construcción Rápida!", { ladrillo: 6, varilla: 3 })
         ];
 
-        // =========================================================================
-        // CLASE 3: Albanil
-        // Modela al jugador, su física y su dibujo vectorial detallado.
-        // =========================================================================
+        // --- CLASE ALBAÑIL (JUGADOR) ---
         class Albanil {
-            constructor(canvasAncho, canvasAlto) {
-                this.canvasAncho = canvasAncho;
-                this.canvasAlto = canvasAlto;
-
-                this.ancho = 130;
-                this.alto = 110;
-
-                this.x = (this.canvasAncho / 2) - (this.ancho / 2);
-                this.y = this.canvasAlto - this.alto - 25;
-
-                this.velocidad = 11;
-                this.moviendoIzquierda = false;
-                this.moviendoDerecha = false;
-                this.animFrame = 0;
+            constructor(canvasWidth, canvasHeight) {
+                this.cw = canvasWidth;
+                this.ch = canvasHeight;
+                this.ancho = 110;
+                this.alto = 100;
+                this.x = canvasWidth / 2 - this.ancho / 2;
+                this.y = canvasHeight - this.alto - 40;
+                this.velocidad = 9;
+                this.movLado = 0; // -1: Izquierda, 1: Derecha, 0: Quieto
             }
 
-            resetear() {
-                this.x = (this.canvasAncho / 2) - (this.ancho / 2);
-                this.moviendoIzquierda = false;
-                this.moviendoDerecha = false;
-            }
-
-            actualizar() {
-                if (this.moviendoIzquierda) {
-                    this.x -= this.velocidad;
-                    this.animFrame += 0.2;
-                }
-                if (this.moviendoDerecha) {
-                    this.x += this.velocidad;
-                    this.animFrame += 0.2;
-                }
-
-                // Limites de pantalla
+            mover() {
+                this.x += this.movLado * this.velocidad;
+                // Límites de pantalla
                 if (this.x < 10) this.x = 10;
-                if (this.x + this.ancho > this.canvasAncho - 150) { // Deja espacio al Ingeniero
-                    this.x = this.canvasAncho - 150 - this.ancho;
-                }
+                if (this.x + this.ancho > this.cw - 10) this.x = this.cw - this.ancho - 10;
+            }
+
+            // Obtiene la hitbox exacta de la carretilla (donde caen las cosas)
+            getHitboxCarretilla() {
+                return {
+                    x: this.x + 10,
+                    y: this.y + 40,
+                    ancho: this.ancho - 20,
+                    alto: 25
+                };
             }
 
             dibujar(ctx) {
                 ctx.save();
                 ctx.translate(this.x, this.y);
 
-                // Sombra proyectada en el suelo
+                // Sombra
                 ctx.fillStyle = 'rgba(0,0,0,0.3)';
                 ctx.beginPath();
-                ctx.ellipse(this.ancho / 2, this.alto - 5, 55, 10, 0, 0, Math.PI * 2);
+                ctx.ellipse(55, 95, 45, 8, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // 1. CARRETILLA (Vectorial)
+                // 1. DIBUJAR ALBAÑIL (PERSONAJE 2D)
+                // Cuerpo/Chaleco
+                ctx.fillStyle = '#ea580c'; // Chaleco naranja
+                ctx.fillRect(25, 30, 30, 45);
+                ctx.fillStyle = '#f8fafc'; // Cintas reflectoras
+                ctx.fillRect(25, 42, 30, 6);
+                ctx.fillRect(25, 56, 30, 6);
+
+                // Cabeza y Cara
+                ctx.fillStyle = '#fca5a5';
+                ctx.beginPath();
+                ctx.arc(40, 20, 14, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Ojos y Sonrisa
+                ctx.fillStyle = '#000';
+                ctx.fillRect(44, 16, 3, 3);
+                ctx.beginPath();
+                ctx.arc(42, 22, 5, 0, Math.PI);
+                ctx.stroke();
+
+                // Casco
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.arc(40, 17, 16, Math.PI, Math.PI * 2);
+                ctx.fill();
+                ctx.fillRect(22, 16, 36, 4);
+
+                // 2. DIBUJAR CARRETILLA
                 // Rueda
-                const rotRueda = this.animFrame;
-                ctx.save();
-                ctx.translate(this.ancho - 25, this.alto - 18);
-                ctx.rotate(rotRueda);
                 ctx.fillStyle = '#334155';
                 ctx.beginPath();
-                ctx.arc(0, 0, 16, 0, Math.PI * 2);
+                ctx.arc(90, 80, 12, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.fillStyle = '#94a3b8';
                 ctx.beginPath();
-                ctx.arc(0, 0, 6, 0, Math.PI * 2);
+                ctx.arc(90, 80, 5, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.restore();
 
-                // Estructura metálica carretilla
-                ctx.strokeStyle = '#475569';
-                ctx.lineWidth = 5;
+                // Tolva/Cuerpo de la carretilla
+                ctx.fillStyle = '#64748b';
                 ctx.beginPath();
-                ctx.moveTo(35, this.alto - 30);
-                ctx.lineTo(this.ancho - 25, this.alto - 18);
-                ctx.stroke();
-
-                // Tolva naranja/rojo
-                ctx.fillStyle = '#d97706';
-                ctx.strokeStyle = '#78350f';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(40, this.alto - 50);
-                ctx.lineTo(this.ancho - 10, this.alto - 50);
-                ctx.lineTo(this.ancho - 25, this.alto - 22);
-                ctx.lineTo(55, this.alto - 22);
+                ctx.moveTo(40, 50);
+                ctx.lineTo(100, 50);
+                ctx.lineTo(85, 80);
+                ctx.lineTo(45, 80);
                 ctx.closePath();
                 ctx.fill();
-                ctx.stroke();
-
-                // 2. ALBAÑIL (Personaje Vectorial)
-                // Cuerpo/Camisa a cuadros
-                ctx.fillStyle = '#dc2626';
-                ctx.fillRect(15, this.alto - 65, 30, 35);
-                ctx.fillStyle = '#b91c1c';
-                ctx.fillRect(25, this.alto - 65, 10, 35);
-
-                // Brazos empujando
-                ctx.strokeStyle = '#fca5a5';
-                ctx.lineWidth = 7;
-                ctx.beginPath();
-                ctx.moveTo(25, this.alto - 55);
-                ctx.lineTo(50, this.alto - 45);
-                ctx.stroke();
-
-                // Cabeza y Rostro
-                ctx.fillStyle = '#fca5a5';
-                ctx.beginPath();
-                ctx.arc(28, this.alto - 75, 15, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Ojo y Sonrisa
-                ctx.fillStyle = '#0f172a';
-                ctx.beginPath();
-                ctx.arc(33, this.alto - 77, 2.5, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.strokeStyle = '#7f1d1d';
+                ctx.strokeStyle = '#334155';
                 ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(30, this.alto - 72, 5, 0.1, Math.PI - 0.1);
                 ctx.stroke();
 
-                // Casco de Protección
-                ctx.fillStyle = '#f59e0b';
+                // Patas y Mangos
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 4;
                 ctx.beginPath();
-                ctx.arc(28, this.alto - 82, 17, Math.PI, 0);
-                ctx.fill();
-                ctx.fillRect(9, this.alto - 83, 38, 5); // Visera del casco
+                ctx.moveTo(45, 80);
+                ctx.lineTo(40, 92); // Pata
+                ctx.moveTo(40, 60);
+                ctx.lineTo(15, 65); // Mango sostenido por el albañil
+                ctx.stroke();
 
                 ctx.restore();
             }
         }
 
-        // =========================================================================
-        // CLASE 4: Item
-        // Modela los objetos cayendo con dibujado vectorial y efecto de brillo.
-        // =========================================================================
+        // --- CLASE ÍTEM (OBJETOS QUE CAEN) ---
         class Item {
-            constructor(canvasAncho, datosItem, velocidadBase, esRequerido) {
-                this.canvasAncho = canvasAncho;
-                this.datos = datosItem;
-                this.esRequerido = esRequerido; // Si la misión actual lo necesita
-
-                this.tamano = 42;
-                // Mantener ítems dentro del área jugable
-                this.x = Math.random() * (this.canvasAncho - 220 - this.tamano * 2) + this.tamano + 20;
-                this.y = -this.tamano - 10;
-
-                this.velocidadY = velocidadBase + (Math.random() * 1.5);
-                this.rotacion = (Math.random() - 0.5) * 0.5;
+            constructor(canvasWidth, tipoClave, velocidad) {
+                this.cw = canvasWidth;
+                this.tipoClave = tipoClave;
+                this.info = TIPOS_ITEMS[tipoClave];
+                this.ancho = 42;
+                this.alto = 42;
+                this.x = Math.random() * (canvasWidth - this.ancho - 40) + 20;
+                this.y = -50;
+                this.velocidadY = velocidad;
+                this.rotacion = (Math.random() - 0.5) * 0.1;
                 this.angulo = 0;
             }
 
@@ -503,522 +478,328 @@
                 this.angulo += this.rotacion;
             }
 
+            getHitbox() {
+                return {
+                    x: this.x,
+                    y: this.y,
+                    ancho: this.ancho,
+                    alto: this.alto
+                };
+            }
+
             dibujar(ctx) {
                 ctx.save();
-                ctx.translate(this.x, this.y);
-
-                // Brillo aura flotante si es ítem requerido por la misión
-                if (this.esRequerido) {
-                    ctx.shadowColor = '#f59e0b';
-                    ctx.shadowBlur = 18;
-                    ctx.strokeStyle = '#fbbf24';
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, this.tamano / 1.5, 0, Math.PI * 2);
-                    ctx.stroke();
-                }
-
+                ctx.translate(this.x + this.ancho/2, this.y + this.alto/2);
                 ctx.rotate(this.angulo);
 
-                // RENDERIZADO VECTORIAL POR CADA TIPO DE ÍTEM
-                switch (this.datos.id) {
-                    case 'CEMENTO':
-                        ctx.fillStyle = '#94a3b8';
-                        ctx.fillRect(-18, -22, 36, 44);
-                        ctx.fillStyle = '#64748b';
-                        ctx.fillRect(-18, -5, 36, 10);
-                        ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 8px Inter';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('CEMENTO', 0, 3);
-                        break;
+                const t = this.tipoClave;
 
-                    case 'LADRILLO':
-                        ctx.fillStyle = '#b91c1c';
-                        ctx.fillRect(-22, -14, 44, 28);
-                        ctx.fillStyle = '#7f1d1d';
-                        ctx.strokeRect(-22, -14, 44, 28);
-                        // Agujeros de ladrillo
-                        ctx.fillStyle = '#450a0a';
-                        ctx.fillRect(-14, -6, 8, 12);
-                        ctx.fillRect(-4, -6, 8, 12);
-                        ctx.fillRect(6, -6, 8, 12);
-                        break;
-
-                    case 'ARENA':
-                        ctx.fillStyle = '#eab308';
-                        ctx.beginPath();
-                        ctx.arc(0, 4, 18, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.fillRect(-12, -18, 24, 16);
-                        ctx.fillStyle = '#ca8a04';
-                        ctx.fillText('ARENA', -10, 8);
-                        break;
-
-                    case 'GRAVA':
-                        ctx.fillStyle = '#0284c7';
-                        ctx.beginPath();
-                        ctx.moveTo(-16, -14);
-                        ctx.lineTo(16, -14);
-                        ctx.lineTo(12, 16);
-                        ctx.lineTo(-12, 16);
-                        ctx.closePath();
-                        ctx.fill();
-                        // Piedras
-                        ctx.fillStyle = '#94a3b8';
-                        ctx.beginPath();
-                        ctx.arc(-4, -2, 5, 0, Math.PI * 2);
-                        ctx.arc(4, 4, 6, 0, Math.PI * 2);
-                        ctx.fill();
-                        break;
-
-                    case 'VARILLA':
-                        ctx.fillStyle = '#475569';
-                        ctx.fillRect(-6, -26, 12, 52);
-                        ctx.fillStyle = '#f97316'; // Estrías
-                        for (let i = -20; i < 20; i += 8) {
-                            ctx.fillRect(-6, i, 12, 2);
-                        }
-                        break;
-
-                    case 'PLATANO':
-                        ctx.fillStyle = '#facc15';
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 16, 0, Math.PI);
-                        ctx.fill();
-                        ctx.strokeStyle = '#ca8a04';
-                        ctx.lineWidth = 4;
-                        ctx.stroke();
-                        break;
-
-                    case 'BOTELLA':
-                        ctx.fillStyle = '#15803d';
-                        ctx.fillRect(-7, -5, 14, 24);
-                        ctx.fillRect(-3, -20, 6, 15);
-                        break;
-
-                    case 'PELOTA':
-                        ctx.fillStyle = '#ffffff';
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 16, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.fillStyle = '#0f172a';
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 7, 0, Math.PI * 2);
-                        ctx.fill();
-                        break;
-
-                    case 'CACTUS':
-                        ctx.fillStyle = '#b45309';
-                        ctx.fillRect(-10, 2, 20, 14); // Maceta
-                        ctx.fillStyle = '#16a34a';
-                        ctx.fillRect(-6, -18, 12, 20); // Cactus
-                        break;
+                if (t === 'ladrillo') {
+                    ctx.fillStyle = '#b91c1c';
+                    ctx.fillRect(-18, -12, 36, 24);
+                    ctx.fillStyle = '#7f1d1d';
+                    ctx.fillRect(-14, -8, 8, 6);
+                    ctx.fillRect(-2, -8, 8, 6);
+                    ctx.fillRect(10, -8, 8, 6);
+                } else if (t === 'cemento') {
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.fillRect(-16, -20, 32, 40);
+                    ctx.fillStyle = '#e2e8f0';
+                    ctx.fillRect(-12, -10, 24, 20);
+                    ctx.fillStyle = '#0f172a';
+                    ctx.font = 'bold 8px sans-serif';
+                    ctx.fillText('CEM', -9, 3);
+                } else if (t === 'agua') {
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.beginPath();
+                    ctx.arc(0, 4, 16, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillStyle = '#0284c7';
+                    ctx.fillRect(-6, -18, 12, 10);
+                } else if (t === 'grava') {
+                    ctx.fillStyle = '#64748b';
+                    ctx.beginPath(); ctx.arc(-6, -4, 8, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(6, -2, 10, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(0, 8, 9, 0, Math.PI*2); ctx.fill();
+                } else if (t === 'varilla') {
+                    ctx.fillStyle = '#334155';
+                    ctx.fillRect(-5, -22, 10, 44);
+                    ctx.fillStyle = '#94a3b8';
+                    for(let i = -18; i < 20; i+=8) ctx.fillRect(-6, i, 12, 2);
+                } else if (t === 'platano') {
+                    ctx.strokeStyle = '#facc15';
+                    ctx.lineWidth = 8;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 14, 0.2, Math.PI - 0.2);
+                    ctx.stroke();
+                } else { // Botella, Pelota, Lata
+                    ctx.fillStyle = this.info.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 15, 0, Math.PI*2);
+                    ctx.fill();
                 }
+
+                // Borde de distinción
+                ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(-this.ancho/2, -this.alto/2, this.ancho, this.alto);
 
                 ctx.restore();
             }
-
-            tocoSuelo(canvasAlto) {
-                return this.y - this.tamano > canvasAlto - 30;
-            }
         }
 
-        // =========================================================================
-        // CLASE 5: Juego
-        // Bucle principal, renderizado del Ingeniero de obra y gestor global.
-        // =========================================================================
+        // --- CLASE JUEGO (CONTROLADOR PRINCIPAL) ---
         class Juego {
             constructor() {
-                this.albanil = new Albanil(ANCHO_CANVAS, ALTO_CANVAS);
+                this.albanil = new Albanil(canvas.width, canvas.height);
                 this.items = [];
-                this.particulas = [];
-
+                this.misionActual = null;
                 this.puntos = 0;
                 this.vidas = 3;
-                this.estaJugando = false;
-                this.dificultadActual = 'NORMAL';
-
-                this.misionActual = null;
-                this.indiceMision = 0;
-
-                this.intervaloGenerador = null;
-                this.idAnimacion = null;
-
-                // Parámetros de Dificultad
-                this.configDificultad = {
-                    FACIL: { velocidad: 3.2, tiempoSpawn: 1000, texto: 'FÁCIL' },
-                    NORMAL: { velocidad: 4.8, tiempoSpawn: 750, texto: 'NORMAL' },
-                    DIFICIL: { velocidad: 6.8, tiempoSpawn: 500, texto: 'DIFÍCIL' }
+                this.estado = 'MENU'; // 'MENU', 'JUGANDO', 'GAMEOVER'
+                this.dificultad = 'normal';
+                
+                // Configuración según dificultad
+                this.configDiff = {
+                    facil:   { velBase: 2.5, spawnRate: 1100 },
+                    normal:  { velBase: 4.0, spawnRate: 850 },
+                    dificil: { velBase: 6.0, spawnRate: 600 }
                 };
 
-                this.configurarEventos();
+                this.intervaloSpawn = null;
+                this.teclas = {};
+
+                this.initListeners();
             }
 
-            setDificultad(nivel) {
-                if (this.configDificultad[nivel]) {
-                    this.dificultadActual = nivel;
-                    txtModo.innerText = this.configDificultad[nivel].texto;
-                }
+            initListeners() {
+                window.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.albanil.movLado = -1;
+                    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.albanil.movLado = 1;
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && this.albanil.movLado === -1) this.albanil.movLado = 0;
+                    if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && this.albanil.movLado === 1) this.albanil.movLado = 0;
+                });
+
+                // Botones Dificultad
+                document.querySelectorAll('.diff-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.diff-btn').forEach(b => b.classList.add('btn-secondary'));
+                        e.target.classList.remove('btn-secondary');
+                        this.dificultad = e.target.dataset.diff;
+                    });
+                });
+
+                document.getElementById('start-btn').addEventListener('click', () => this.iniciar());
+                document.getElementById('restart-btn').addEventListener('click', () => this.iniciar());
             }
 
             iniciar() {
                 this.puntos = 0;
                 this.vidas = 3;
                 this.items = [];
-                this.particulas = [];
-                this.indiceMision = 0;
-                this.estaJugando = true;
+                this.estado = 'JUGANDO';
+                
+                document.getElementById('start-modal').classList.add('hidden');
+                document.getElementById('gameover-modal').classList.add('hidden');
+                document.getElementById('ui-layer').classList.remove('hidden');
 
-                this.albanil.resetear();
-                this.cargarNuevaMision();
+                this.siguienteMision();
+                this.actualizarHUD();
 
-                pantallaInicio.classList.add('hidden');
-                pantallaGameOver.classList.add('hidden');
+                if (this.intervaloSpawn) clearInterval(this.intervaloSpawn);
+                
+                const cfg = this.configDiff[this.dificultad];
+                this.intervaloSpawn = setInterval(() => this.generarItem(), cfg.spawnRate);
 
-                const cfg = this.configDificultad[this.dificultadActual];
-
-                if (this.intervaloGenerador) clearInterval(this.intervaloGenerador);
-                this.intervaloGenerador = setInterval(() => {
-                    if (this.estaJugando) this.generarItem();
-                }, cfg.tiempoSpawn);
-
-                if (this.idAnimacion) cancelAnimationFrame(this.idAnimacion);
-                this.gameLoop();
+                requestAnimationFrame(() => this.loop());
             }
 
-            cargarNuevaMision() {
-                const creador = FABRICA_MISIONES[this.indiceMision % FABRICA_MISIONES.length];
-                this.misionActual = creador();
-                this.indiceMision++;
-                this.actualizarHUD();
+            siguienteMision() {
+                const idx = Math.floor(Math.random() * LISTA_MISIONES.length);
+                this.misionActual = LISTA_MISIONES[idx]();
+                this.actualizarHUDMision();
             }
 
             generarItem() {
-                const keys = Object.keys(CATALOGO_ITEMS);
-                let itemElegido;
+                if (this.estado !== 'JUGANDO') return;
 
-                // 60% de probabilidad de generar un ítem relevante para la misión activa
-                if (Math.random() < 0.6 && this.misionActual) {
-                    const reqKeys = Object.keys(this.misionActual.requerimientos);
-                    const randomReq = reqKeys[Math.floor(Math.random() * reqKeys.length)];
-                    itemElegido = CATALOGO_ITEMS[randomReq];
-                } else {
-                    const randomKey = keys[Math.floor(Math.random() * keys.length)];
-                    itemElegido = CATALOGO_ITEMS[randomKey];
-                }
+                const claves = Object.keys(TIPOS_ITEMS);
+                const claveAleatoria = claves[Math.floor(Math.random() * claves.length)];
+                const vel = this.configDiff[this.dificultad].velBase + Math.random() * 1.5;
 
-                const esReq = this.misionActual && this.misionActual.esMaterialRequerido(itemElegido.id);
-                const velBase = this.configDificultad[this.dificultadActual].velocidad;
-
-                this.items.push(new Item(ANCHO_CANVAS, itemElegido, velBase, esReq));
+                this.items.push(new Item(canvas.width, claveAleatoria, vel));
             }
 
-            detectarColision(albanil, item) {
-                // Caja de colisión en la tolva de la carretilla
-                const cajaCarretilla = {
-                    x: albanil.x + 45,
-                    y: albanil.y + 40,
-                    ancho: 75,
-                    alto: 45
-                };
-
+            // Detección AABB (Axis-Aligned Bounding Box)
+            detectarColision(rect1, rect2) {
                 return (
-                    item.x + 15 > cajaCarretilla.x &&
-                    item.x - 15 < cajaCarretilla.x + cajaCarretilla.ancho &&
-                    item.y + 15 > cajaCarretilla.y &&
-                    item.y - 15 < cajaCarretilla.y + cajaCarretilla.alto
+                    rect1.x < rect2.x + rect2.ancho &&
+                    rect1.x + rect1.ancho > rect2.x &&
+                    rect1.y < rect2.y + rect2.alto &&
+                    rect1.y + rect1.alto > rect2.y
                 );
             }
 
-            crearExplosionParticulas(x, y, color, cantidad = 12) {
-                for (let i = 0; i < cantidad; i++) {
-                    this.particulas.push(new Particula(x, y, color));
-                }
-            }
+            actualizar() {
+                if (this.estado !== 'JUGANDO') return;
 
-            gameLoop() {
-                if (!this.estaJugando) return;
+                this.albanil.mover();
+                const hbCarretilla = this.albanil.getHitboxCarretilla();
 
-                // 1. Dibujar Fondo de la Obra en alta resolución
-                this.dibujarEscenario();
-
-                // 2. Dibujar personaje del Ingeniero a la derecha
-                this.dibujarIngeniero();
-
-                // 3. Actualizar y dibujar Albañil
-                this.albanil.actualizar();
-                this.albanil.dibujar(ctx);
-
-                // 4. Actualizar partículas
-                for (let i = this.particulas.length - 1; i >= 0; i--) {
-                    const p = this.particulas[i];
-                    p.actualizar();
-                    p.dibujar(ctx);
-                    if (p.vida <= 0) this.particulas.splice(i, 1);
-                }
-
-                // 5. Gestionar Ítems
                 for (let i = this.items.length - 1; i >= 0; i--) {
                     const item = this.items[i];
                     item.actualizar();
-                    item.dibujar(ctx);
 
-                    // A) Si atrapa el ítem
-                    if (this.detectarColision(this.albanil, item)) {
-                        this.procesarItemRecolectado(item);
+                    // 1. Colisión con la carretilla
+                    if (this.detectarColision(hbCarretilla, item.getHitbox())) {
+                        this.procesarCaptura(item);
                         this.items.splice(i, 1);
                         continue;
                     }
 
-                    // B) Si el ítem llega al suelo
-                    if (item.tocoSuelo(ALTO_CANVAS)) {
-                        // Si era un ítem que la misión requería, penalizar
-                        if (this.misionActual.esMaterialRequerido(item.datos.id)) {
-                            this.vidas--;
-                            this.crearExplosionParticulas(item.x, ALTO_CANVAS - 20, '#ef4444', 8);
-                            this.actualizarHUD();
+                    // 2. Toca el suelo
+                    if (item.y > canvas.height - 50) {
+                        // Si era un material necesario que dejó pasar, pierde vida
+                        if (this.misionActual.esNecesario(item.tipoClave)) {
+                            this.perderVida("¡Dejaste caer un material necesario!");
                         }
                         this.items.splice(i, 1);
                     }
                 }
-
-                // Condición de Game Over
-                if (this.vidas <= 0) {
-                    this.terminar("Has agotado tus vidas por recolectar basura o desperdiciar los materiales de la orden.");
-                    return;
-                }
-
-                this.idAnimacion = requestAnimationFrame(() => this.gameLoop());
             }
 
-            procesarItemRecolectado(item) {
-                const datos = item.datos;
+            procesarCaptura(item) {
+                // Caso A: Es un material de la misión actual
+                if (this.misionActual.esNecesario(item.tipoClave)) {
+                    this.misionActual.registrar(item.tipoClave);
+                    this.puntos += 100;
 
-                if (datos.esBasura) {
-                    // Penalti por recolectar basura
-                    this.puntos = Math.max(0, this.puntos - 80);
-                    this.vidas--;
-                    this.crearExplosionParticulas(item.x, item.y, '#7f1d1d', 15);
-                } else if (this.misionActual.esMaterialRequerido(datos.id)) {
-                    // Material solicitado
-                    const sumo = this.misionActual.registrarRecolectado(datos.id);
-                    if (sumo) {
-                        this.puntos += 150;
-                        this.crearExplosionParticulas(item.x, item.y, '#f59e0b', 16);
-                    } else {
-                        // Ya se había completado el cupo de este material específico
-                        this.puntos += 30;
-                        this.crearExplosionParticulas(item.x, item.y, '#94a3b8', 8);
-                    }
-
-                    // ¿Misión Completada?
                     if (this.misionActual.estaCompletada()) {
-                        this.puntos += 500;
-                        this.crearExplosionParticulas(ANCHO_CANVAS - 80, 200, '#10b981', 30);
-                        this.cargarNuevaMision();
+                        this.puntos += 500; // Bonus por completar misión
+                        this.siguienteMision();
                     }
-                } else {
-                    // Material de construcción válido pero no pedido en esta misión
-                    this.puntos += 20;
-                    this.crearExplosionParticulas(item.x, item.y, '#cbd5e1', 6);
+                } 
+                // Caso B: Es basura o material no solicitado
+                else {
+                    this.puntos = Math.max(0, this.puntos - 50);
+                    this.perderVida(`¡Recogiste ${item.info.nombre} que no se pedía!`);
                 }
 
                 this.actualizarHUD();
             }
 
-            dibujarEscenario() {
-                // Cielo degradado
-                const gradCielo = ctx.createLinearGradient(0, 0, 0, ALTO_CANVAS);
-                gradCielo.addColorStop(0, '#0284c7');
-                gradCielo.addColorStop(0.6, '#38bdf8');
-                gradCielo.addColorStop(1, '#bae6fd');
-                ctx.fillStyle = gradCielo;
-                ctx.fillRect(0, 0, ANCHO_CANVAS, ALTO_CANVAS);
+            perderVida(razon) {
+                this.vidas--;
+                this.actualizarHUD();
 
-                // Edificio en construcción (Fondo)
-                ctx.fillStyle = '#475569';
-                ctx.fillRect(80, 120, 260, 320);
-
-                // Ventanas y huecos de la obra
-                ctx.fillStyle = '#1e293b';
-                for (let fila = 0; fila < 4; fila++) {
-                    for (let col = 0; col < 3; col++) {
-                        ctx.fillRect(105 + (col * 75), 150 + (fila * 70), 50, 45);
-                    }
+                if (this.vidas <= 0) {
+                    this.gameOver(razon);
                 }
-
-                // Andamios metálicos
-                ctx.strokeStyle = '#94a3b8';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(60, 120, 300, 320);
-
-                // Grúa de construcción
-                ctx.strokeStyle = '#eab308';
-                ctx.lineWidth = 6;
-                ctx.beginPath();
-                ctx.moveTo(480, 440);
-                ctx.lineTo(480, 60);
-                ctx.lineTo(680, 60);
-                ctx.stroke();
-
-                // Cable de la grúa
-                ctx.strokeStyle = '#334155';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(620, 60);
-                ctx.lineTo(620, 160);
-                ctx.stroke();
-
-                // Suelo de tierra de obra
-                ctx.fillStyle = '#78350f';
-                ctx.fillRect(0, ALTO_CANVAS - 40, ANCHO_CANVAS, 40);
-                ctx.fillStyle = '#a16207';
-                ctx.fillRect(0, ALTO_CANVAS - 45, ANCHO_CANVAS, 5);
-            }
-
-            dibujarIngeniero() {
-                const ix = ANCHO_CANVAS - 110;
-                const iy = ALTO_CANVAS - 150;
-
-                ctx.save();
-                // Sombra
-                ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                ctx.beginPath();
-                ctx.ellipse(ix + 30, iy + 105, 30, 8, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Cuerpo / Chaleco de seguridad
-                ctx.fillStyle = '#0284c7'; // Camisa azul
-                ctx.fillRect(ix + 10, iy + 40, 40, 50);
-
-                ctx.fillStyle = '#f97316'; // Chaleco naranja
-                ctx.fillRect(ix + 10, iy + 40, 12, 50);
-                ctx.fillRect(ix + 38, iy + 40, 12, 50);
-
-                // Bandas reflectantes
-                ctx.fillStyle = '#e2e8f0';
-                ctx.fillRect(ix + 10, iy + 60, 40, 6);
-
-                // Tabla de apuntes / Clipboard
-                ctx.fillStyle = '#78350f';
-                ctx.fillRect(ix - 5, iy + 45, 22, 30);
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(ix - 3, iy + 48, 18, 24);
-
-                // Cabeza
-                ctx.fillStyle = '#fca5a5';
-                ctx.beginPath();
-                ctx.arc(ix + 30, iy + 25, 16, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Casco Blanco de Ingeniero
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath();
-                ctx.arc(ix + 30, iy + 20, 18, Math.PI, 0);
-                ctx.fill();
-                ctx.fillRect(ix + 8, iy + 18, 44, 5);
-
-                ctx.restore();
             }
 
             actualizarHUD() {
-                txtPuntos.innerText = this.puntos;
+                document.getElementById('score-val').innerText = this.puntos;
+                document.getElementById('lives-val').innerText = '♥'.repeat(Math.max(0, this.vidas));
+                document.getElementById('difficulty-tag').innerText = this.dificultad.toUpperCase();
+                this.actualizarHUDMision();
+            }
 
-                let corazones = '';
-                for (let i = 0; i < this.vidas; i++) corazones += '❤️';
-                txtVidas.innerText = corazones || '💀';
+            actualizarHUDMision() {
+                if (!this.misionActual) return;
 
-                if (this.misionActual) {
-                    txtTituloMision.innerText = this.misionActual.titulo;
+                document.getElementById('mission-desc').innerText = this.misionActual.titulo;
+                
+                const container = document.getElementById('mission-targets');
+                container.innerHTML = '';
 
-                    // Generar tarjetas miniaturas de conteo por material
-                    contenedorObjetivos.innerHTML = '';
-                    for (let key in this.misionActual.requerimientos) {
-                        const req = this.misionActual.requerimientos[key];
-                        const itemInfo = CATALOGO_ITEMS[key];
+                for (let k in this.misionActual.requeridos) {
+                    const req = this.misionActual.requeridos[k];
+                    const rec = this.misionActual.recolectados[k];
+                    const completo = rec >= req;
 
-                        const badge = document.createElement('div');
-                        badge.className = `wood-panel-sub px-2 py-1 rounded-lg flex items-center gap-1.5 border ${
-                            req.recolectado >= req.pedido ? 'border-emerald-500/80 bg-emerald-950/40' : 'border-amber-600/60'
-                        }`;
-
-                        badge.innerHTML = `
-                            <span class="text-xs font-bold" style="color:${itemInfo.color}">${itemInfo.nombre}</span>
-                            <span class="font-pixel text-[10px] ${req.recolectado >= req.pedido ? 'text-emerald-400' : 'text-amber-300'}">
-                                ${req.recolectado}/${req.pedido}
-                            </span>
-                        `;
-                        contenedorObjetivos.appendChild(badge);
-                    }
+                    const badge = document.createElement('div');
+                    badge.className = `target-badge ${completo ? 'complete' : ''}`;
+                    badge.innerText = `${TIPOS_ITEMS[k].nombre}: ${rec}/${req}`;
+                    container.appendChild(badge);
                 }
             }
 
-            terminar(motivo) {
-                this.estaJugando = false;
-                clearInterval(this.intervaloGenerador);
-                motivoGameOver.innerText = motivo;
-                puntajeFinal.innerText = this.puntos;
-                pantallaGameOver.classList.remove('hidden');
+            gameOver(razon) {
+                this.estado = 'GAMEOVER';
+                clearInterval(this.intervaloSpawn);
+                document.getElementById('gameover-reason').innerText = razon;
+                document.getElementById('final-score').innerText = this.puntos;
+                document.getElementById('gameover-modal').classList.remove('hidden');
             }
 
-            configurarEventos() {
-                window.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.albanil.moviendoIzquierda = true;
-                    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.albanil.moviendoDerecha = true;
-                });
+            dibujarEscenario() {
+                // Cielo
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                window.addEventListener('keyup', (e) => {
-                    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.albanil.moviendoIzquierda = false;
-                    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.albanil.moviendoDerecha = false;
-                });
+                // Sol
+                ctx.fillStyle = '#fef08a';
+                ctx.beginPath(); ctx.arc(750, 80, 40, 0, Math.PI*2); ctx.fill();
 
-                // Controles Táctiles
-                const btnIzquierda = document.getElementById('btnIzquierda');
-                const btnDerecha = document.getElementById('btnDerecha');
+                // Edificio en construcción (Fondo)
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillRect(80, 150, 220, 370);
+                ctx.fillStyle = '#475569';
+                for(let row = 0; row < 5; row++) {
+                    for(let col = 0; col < 3; col++) {
+                        ctx.fillRect(105 + col*60, 180 + row*65, 40, 45);
+                    }
+                }
 
-                const izqOn = (e) => { e.preventDefault(); this.albanil.moviendoIzquierda = true; };
-                const izqOff = (e) => { e.preventDefault(); this.albanil.moviendoIzquierda = false; };
-                const derOn = (e) => { e.preventDefault(); this.albanil.moviendoDerecha = true; };
-                const derOff = (e) => { e.preventDefault(); this.albanil.moviendoDerecha = false; };
+                // Grúa
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.moveTo(360, 520); ctx.lineTo(360, 100); ctx.lineTo(650, 100);
+                ctx.stroke();
 
-                btnIzquierda.addEventListener('touchstart', izqOn);
-                btnIzquierda.addEventListener('touchend', izqOff);
-                btnIzquierda.addEventListener('mousedown', izqOn);
-                btnIzquierda.addEventListener('mouseup', izqOff);
+                // Suelo de obra
+                ctx.fillStyle = '#78350f';
+                ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+                ctx.fillStyle = '#451a03';
+                ctx.fillRect(0, canvas.height - 50, canvas.width, 8);
 
-                btnDerecha.addEventListener('touchstart', derOn);
-                btnDerecha.addEventListener('touchend', derOff);
-                btnDerecha.addEventListener('mousedown', derOn);
-                btnDerecha.addEventListener('mouseup', derOff);
+                // Ingeniero NPC (en la esquina derecha dando órdenes)
+                ctx.save();
+                ctx.translate(780, 440);
+                ctx.fillStyle = '#1e3a8a'; ctx.fillRect(10, 30, 25, 40); // Traje
+                ctx.fillStyle = '#fca5a5'; ctx.beginPath(); ctx.arc(22, 20, 12, 0, Math.PI*2); ctx.fill(); // Cara
+                ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(22, 16, 14, Math.PI, Math.PI*2); ctx.fill(); // Casco Blanco
+                ctx.fillRect(8, 15, 28, 4);
+                // Tabla de planos
+                ctx.fillStyle = '#d97706'; ctx.fillRect(-2, 35, 14, 20);
+                ctx.restore();
+            }
+
+            loop() {
+                if (this.estado !== 'JUGANDO') return;
+
+                // 1. Limpiar y redibujar mapa
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                this.dibujarEscenario();
+
+                // 2. Actualizar y dibujar entidades
+                this.actualizar();
+                this.albanil.dibujar(ctx);
+
+                this.items.forEach(item => item.dibujar(ctx));
+
+                // 3. Siguiente fotograma
+                requestAnimationFrame(() => this.loop());
             }
         }
 
-        let juego;
-
+        // Inicializar el juego
         window.onload = () => {
-            juego = new Juego();
-
-            // Botones Selector de Dificultad
-            const botonesDificultad = document.querySelectorAll('.btn-dificultad');
-            botonesDificultad.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    botonesDificultad.forEach(b => {
-                        b.classList.remove('bg-amber-500', 'text-slate-950', 'font-black', 'border-amber-300');
-                        b.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
-                    });
-
-                    const target = e.currentTarget;
-                    target.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
-                    target.classList.add('bg-amber-500', 'text-slate-950', 'font-black', 'border-amber-300');
-
-                    const dif = target.getAttribute('data-dificultad');
-                    juego.setDificultad(dif);
-                });
-            });
-
-            btnIniciar.addEventListener('click', () => juego.iniciar());
-            btnReiniciar.addEventListener('click', () => juego.iniciar());
+            new Juego();
         };
     </script>
 </body>
