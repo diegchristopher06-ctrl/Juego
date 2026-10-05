@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Construction Catcher - Misiones del Ingeniero</title>
     <style>
         * {
@@ -10,6 +10,8 @@
             margin: 0;
             padding: 0;
             user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
         }
 
         body {
@@ -26,8 +28,10 @@
 
         #game-container {
             position: relative;
-            width: 900px;
-            height: 600px;
+            width: 100vw;
+            max-width: 900px;
+            height: 100vh;
+            max-height: 600px;
             box-shadow: 0 12px 35px rgba(0,0,0,0.8);
             border-radius: 14px;
             overflow: hidden;
@@ -39,6 +43,7 @@
             display: block;
             width: 100%;
             height: 100%;
+            touch-action: none;
         }
 
         .ui-layer {
@@ -92,7 +97,7 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
-            min-width: 350px;
+            min-width: 280px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.7);
         }
 
@@ -143,7 +148,7 @@
         }
 
         .modal-title {
-            font-size: 40px;
+            font-size: 36px;
             color: #f59e0b;
             margin-bottom: 10px;
             text-align: center;
@@ -221,7 +226,7 @@
 
         <div id="start-modal" class="modal">
             <h1 class="modal-title">CONSTRUCTION CATCHER</h1>
-            <p class="modal-subtitle">Recoge solo los materiales que solicita el Ingeniero para la obra. Evita la basura y los elementos incorrectos.</p>
+            <p class="modal-subtitle">Mueve al constructor con el <b>mouse</b>, <b>pantalla táctil</b> o <b>flechas del teclado</b>. Recoge solo los materiales que solicita la misión.</p>
             
             <div style="text-align: center; margin-bottom: 15px;">
                 <label style="color: #f59e0b; font-weight: bold; display: block; margin-bottom: 10px;">DIFICULTAD:</label>
@@ -247,6 +252,7 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
+        // Assets
         const imgFondo = new Image();
         imgFondo.src = './img/fondo.jpg';
 
@@ -255,6 +261,9 @@
 
         const imgSheet = new Image();
         imgSheet.src = './img/materiales.jpg';
+
+        const imgConstructor = new Image();
+        imgConstructor.src = './img/constructor.jpeg';
 
         const TIPOS_ITEMS = {
             ladrillo: { nombre: 'Ladrillo', esMaterial: true, fuente: 'sheet', crop: { sx: 215, sy: 50, sw: 175, sh: 120 } },
@@ -306,90 +315,53 @@
             constructor(cw, ch) {
                 this.cw = cw;
                 this.ch = ch;
-                this.ancho = 110;
-                this.alto = 100;
+                this.ancho = 160;
+                this.alto = 120;
                 this.x = cw / 2 - this.ancho / 2;
                 this.y = ch - this.alto - 15;
-                this.velocidad = 10;
+                this.velocidad = 11;
                 this.movLado = 0;
+                this.targetX = null;
             }
 
             mover() {
-                this.x += this.movLado * this.velocidad;
-                if (this.x < 10) this.x = 10;
-                if (this.x + this.ancho > this.cw - 10) this.x = this.cw - this.ancho - 10;
+                if (this.targetX !== null) {
+                    const diff = this.targetX - (this.x + this.ancho / 2);
+                    if (Math.abs(diff) > 2) {
+                        this.x += diff * 0.25;
+                    } else {
+                        this.x = this.targetX - this.ancho / 2;
+                    }
+                } else if (this.movLado !== 0) {
+                    this.x += this.movLado * this.velocidad;
+                }
+
+                if (this.x < 0) this.x = 0;
+                if (this.x + this.ancho > this.cw) this.x = this.cw - this.ancho;
             }
 
             getHitboxCarretilla() {
+                // Posición exacta del cubo de la carretilla en constructor.jpeg
                 return {
-                    x: this.x + 25,
-                    y: this.y + 40,
-                    ancho: 65,
-                    alto: 30
+                    x: this.x + (this.ancho * 0.48),
+                    y: this.y + (this.alto * 0.45),
+                    ancho: this.ancho * 0.42,
+                    alto: this.alto * 0.35
                 };
             }
 
             dibujar(ctx) {
                 ctx.save();
-                ctx.translate(this.x, this.y);
 
-                // Carretilla
-                ctx.fillStyle = '#64748b';
-                ctx.beginPath();
-                ctx.moveTo(35, 50);
-                ctx.lineTo(95, 50);
-                ctx.lineTo(85, 80);
-                ctx.lineTo(45, 80);
-                ctx.closePath();
-                ctx.fill();
-                ctx.strokeStyle = '#334155';
-                ctx.lineWidth = 3;
-                ctx.stroke();
-
-                // Rueda
-                ctx.fillStyle = '#1e293b';
-                ctx.beginPath();
-                ctx.arc(85, 82, 10, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#94a3b8';
-                ctx.beginPath();
-                ctx.arc(85, 82, 4, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Patas carretilla
-                ctx.strokeStyle = '#1e293b';
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.moveTo(45, 80);
-                ctx.lineTo(40, 92);
-                ctx.moveTo(35, 60);
-                ctx.lineTo(15, 65);
-                ctx.stroke();
-
-                // Cuerpo Albañil
-                ctx.fillStyle = '#ea580c'; // Chaleco naranja
-                ctx.fillRect(15, 30, 24, 35);
-                ctx.fillStyle = '#f8fafc'; // Banda reflectante
-                ctx.fillRect(15, 42, 24, 6);
-
-                // Cabeza
-                ctx.fillStyle = '#fca5a5';
-                ctx.beginPath();
-                ctx.arc(27, 22, 10, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Ojo
-                ctx.fillStyle = '#0f172a';
-                ctx.beginPath();
-                ctx.arc(31, 20, 2, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Casco
-                ctx.fillStyle = '#facc15';
-                ctx.beginPath();
-                ctx.arc(27, 20, 13, Math.PI, 0);
-                ctx.fill();
-                ctx.fillRect(12, 18, 30, 4);
+                if (imgConstructor.complete && imgConstructor.naturalWidth !== 0) {
+                    // Mezcla Multiply para remover el fondo blanco plano de constructor.jpeg
+                    ctx.globalCompositeOperation = 'multiply';
+                    ctx.drawImage(imgConstructor, this.x, this.y, this.ancho, this.alto);
+                } else {
+                    // Fallback vectorial
+                    ctx.fillStyle = '#ea580c';
+                    ctx.fillRect(this.x, this.y, this.ancho, this.alto);
+                }
 
                 ctx.restore();
             }
@@ -417,7 +389,7 @@
             dibujar(ctx) {
                 ctx.save();
 
-                // Dibujar contenedor tipo tarjeta para eliminar bordes feos
+                // Tarjeta limpia con bordes redondeados y sombra
                 ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
                 ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
                 ctx.shadowBlur = 8;
@@ -442,11 +414,11 @@
                     if (this.tipoClave === 'platano') {
                         ctx.fillStyle = '#facc15';
                         ctx.beginPath();
-                        ctx.arc(this.x + 27, this.y + 27, 15, 0, Math.PI);
+                        ctx.arc(this.x + 27, this.y + 27, 14, 0, Math.PI);
                         ctx.fill();
                     } else if (this.tipoClave === 'botella') {
                         ctx.fillStyle = '#22c55e';
-                        ctx.fillRect(this.x + 22, this.y + 12, 10, 30);
+                        ctx.fillRect(this.x + 22, this.y + 12, 11, 30);
                     }
                 }
 
@@ -474,10 +446,23 @@
                 this.initListeners();
             }
 
+            getCanvasX(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                return (clientX - rect.left) * (canvas.width / rect.width);
+            }
+
             initListeners() {
+                // Teclado
                 window.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowLeft' || e.key === 'a') this.albanil.movLado = -1;
-                    if (e.key === 'ArrowRight' || e.key === 'd') this.albanil.movLado = 1;
+                    if (e.key === 'ArrowLeft' || e.key === 'a') {
+                        this.albanil.targetX = null;
+                        this.albanil.movLado = -1;
+                    }
+                    if (e.key === 'ArrowRight' || e.key === 'd') {
+                        this.albanil.targetX = null;
+                        this.albanil.movLado = 1;
+                    }
                 });
 
                 window.addEventListener('keyup', (e) => {
@@ -485,6 +470,24 @@
                     if ((e.key === 'ArrowRight' || e.key === 'd') && this.albanil.movLado === 1) this.albanil.movLado = 0;
                 });
 
+                // Mouse Move
+                canvas.addEventListener('mousemove', (e) => {
+                    if (this.estado === 'JUGANDO') {
+                        this.albanil.targetX = this.getCanvasX(e);
+                    }
+                });
+
+                // Touch / Móvil drag
+                const handleTouch = (e) => {
+                    if (this.estado === 'JUGANDO' && e.touches.length > 0) {
+                        this.albanil.targetX = this.getCanvasX(e);
+                    }
+                };
+
+                canvas.addEventListener('touchstart', handleTouch, { passive: true });
+                canvas.addEventListener('touchmove', handleTouch, { passive: true });
+
+                // Botones dificultad
                 document.querySelectorAll('.diff-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         document.querySelectorAll('.diff-btn').forEach(b => b.classList.add('btn-secondary'));
