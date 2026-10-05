@@ -2,651 +2,699 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Construction Catcher - Misiones del Ingeniero</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuentra la Piedra - Juego de los Vasos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        body {
+            font-family: 'Inter', sans-serif;
             user-select: none;
             -webkit-user-select: none;
-            touch-action: none;
+            overflow-x: hidden;
         }
-
-        body {
-            background-color: #0f172a;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
+        .wood-texture {
+            background: radial-gradient(circle at center, #2c1b18 0%, #170d0b 100%);
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
         }
-
-        #game-container {
-            position: relative;
-            width: 100vw;
-            max-width: 900px;
-            height: 100vh;
-            max-height: 600px;
-            box-shadow: 0 12px 35px rgba(0,0,0,0.8);
-            border-radius: 14px;
-            overflow: hidden;
-            border: 4px solid #f59e0b;
-            background: #0f172a;
+        .table-mat {
+            background: radial-gradient(ellipse at center, #1b4332 0%, #081c15 80%);
+            border: 12px solid #3d2314;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7), inset 0 0 40px rgba(0,0,0,0.6);
         }
-
         canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
             touch-action: none;
         }
-
-        .ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 15px;
-        }
-
-        .hud-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .hud-card {
-            background: rgba(30, 41, 59, 0.9);
-            border: 2px solid #f59e0b;
-            border-radius: 10px;
-            padding: 10px 18px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            pointer-events: auto;
-        }
-
-        .hud-title {
-            font-size: 11px;
-            color: #f59e0b;
-            text-transform: uppercase;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        .hud-value {
-            font-size: 22px;
-            font-weight: 900;
-            color: #fff;
-        }
-
-        .mission-panel {
-            background: rgba(15, 23, 42, 0.95);
-            border: 2px solid #38bdf8;
-            border-radius: 10px;
-            padding: 12px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-width: 280px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.7);
-        }
-
-        .mission-title {
-            color: #38bdf8;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        .mission-targets {
-            display: flex;
-            gap: 10px;
-            margin-top: 5px;
-            flex-wrap: wrap;
-        }
-
-        .target-badge {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 6px;
-            padding: 5px 10px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: bold;
-        }
-
-        .target-badge.complete {
-            background: rgba(34, 197, 94, 0.3);
-            border-color: #22c55e;
-            color: #4ade80;
-        }
-
-        .modal {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.92);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            pointer-events: auto;
-            z-index: 10;
-        }
-
-        .modal-title {
-            font-size: 36px;
-            color: #f59e0b;
-            margin-bottom: 10px;
-            text-align: center;
-            font-weight: 900;
-        }
-
-        .modal-subtitle {
-            font-size: 15px;
-            color: #cbd5e1;
-            margin-bottom: 25px;
-            text-align: center;
-            max-width: 80%;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            background: #f59e0b;
-            color: #0f172a;
-            border: none;
-            padding: 12px 26px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.2s ease;
-        }
-
-        .btn:hover {
-            background: #d97706;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: #334155;
-            color: #fff;
-        }
-
-        .hidden { display: none !important; }
-        .hearts { color: #ef4444; font-size: 20px; }
     </style>
 </head>
-<body>
+<body class="bg-zinc-950 text-white min-h-screen flex flex-col items-center justify-between p-2 sm:p-4">
 
-    <div id="game-container">
-        <canvas id="gameCanvas" width="900" height="600"></canvas>
-
-        <div id="ui-layer" class="ui-layer hidden">
-            <div class="hud-top">
-                <div class="hud-card">
-                    <div class="hud-title">Puntos</div>
-                    <div id="score-val" class="hud-value">0</div>
-                </div>
-
-                <div class="mission-panel">
-                    <div style="display: flex; justify-content: space-between;">
-                        <div class="hud-title">Orden del Ingeniero:</div>
-                        <div id="difficulty-tag" style="font-size: 11px; color: #f59e0b; font-weight: bold;">FÁCIL</div>
-                    </div>
-                    <div id="mission-desc" class="mission-title">Misión</div>
-                    <div id="mission-targets" class="mission-targets"></div>
-                </div>
-
-                <div class="hud-card">
-                    <div class="hud-title">Vidas</div>
-                    <div id="lives-val" class="hearts">♥♥♥</div>
-                </div>
+    <header class="w-full max-w-4xl flex flex-wrap justify-between items-center bg-zinc-900/90 border border-zinc-800 p-3 sm:p-4 rounded-2xl shadow-xl backdrop-blur-md mb-3 gap-2">
+        <div class="flex items-center gap-3">
+            <div class="bg-amber-500/20 border border-amber-500/40 p-2 rounded-xl text-amber-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-lg sm:text-xl text-amber-400 tracking-wide">La Piedra Oculta</h1>
+                <p class="text-xs text-zinc-400" id="level-title">Nivel 1: Principiante</p>
             </div>
         </div>
 
-        <div id="start-modal" class="modal">
-            <h1 class="modal-title">CONSTRUCTION CATCHER</h1>
-            <p class="modal-subtitle">Mueve al constructor con el <b>mouse</b>, <b>pantalla táctil</b> o <b>flechas del teclado</b>. Recoge solo los materiales que solicita la misión.</p>
-            
-            <div style="text-align: center; margin-bottom: 15px;">
-                <label style="color: #f59e0b; font-weight: bold; display: block; margin-bottom: 10px;">DIFICULTAD:</label>
-                <div class="btn-group">
-                    <button class="btn btn-secondary diff-btn" data-diff="facil">Fácil</button>
-                    <button class="btn diff-btn" data-diff="normal">Normal</button>
-                    <button class="btn btn-secondary diff-btn" data-diff="dificil">Difícil</button>
-                </div>
+        <div class="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm">
+            <div class="text-center">
+                <span class="block text-zinc-400 text-xs uppercase tracking-wider">Racha</span>
+                <span class="font-bold text-amber-400 text-base sm:text-lg" id="streak-count">0</span>
             </div>
-
-            <button id="start-btn" class="btn" style="font-size: 18px; padding: 14px 36px;">Iniciar Juego</button>
+            <div class="text-center">
+                <span class="block text-zinc-400 text-xs uppercase tracking-wider">Máx Racha</span>
+                <span class="font-bold text-emerald-400 text-base sm:text-lg" id="best-streak">0</span>
+            </div>
+            <button id="sound-btn" class="p-2.5 bg-zinc-800 hover:bg-zinc-700 active:scale-95 rounded-xl border border-zinc-700 transition">
+                <svg id="sound-icon-on" class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                <svg id="sound-icon-off" class="w-5 h-5 text-zinc-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
+            </button>
         </div>
+    </header>
 
-        <div id="gameover-modal" class="modal hidden">
-            <h1 class="modal-title" style="color: #ef4444;">¡FIN DEL JUEGO!</h1>
-            <p class="modal-subtitle" id="gameover-reason">Cometiste un error en la obra.</p>
-            <div style="font-size: 22px; color: #fff; margin-bottom: 20px;">Puntaje: <span id="final-score" style="color: #f59e0b;">0</span></div>
-            <button id="restart-btn" class="btn">Reintentar</button>
-        </div>
+    <div class="w-full max-w-4xl flex items-center justify-between gap-1 sm:gap-2 mb-3 bg-zinc-900/60 p-1.5 sm:p-2 rounded-2xl border border-zinc-800/80 overflow-x-auto">
+        <button data-level="1" class="level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-amber-500 text-zinc-950 shadow-md">Nivel 1<span class="block text-[10px] font-normal opacity-80">3 Vasos</span></button>
+        <button data-level="2" class="level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-zinc-800 text-zinc-400 hover:bg-zinc-700">Nivel 2<span class="block text-[10px] font-normal opacity-80">4 Vasos</span></button>
+        <button data-level="3" class="level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-zinc-800 text-zinc-400 hover:bg-zinc-700">Nivel 3<span class="block text-[10px] font-normal opacity-80">5 Vasos</span></button>
+        <button data-level="4" class="level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-zinc-800 text-zinc-400 hover:bg-zinc-700">Nivel 4<span class="block text-[10px] font-normal opacity-80">6 Vasos</span></button>
+        <button data-level="5" class="level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-zinc-800 text-zinc-400 hover:bg-zinc-700">Nivel 5<span class="block text-[10px] font-normal opacity-80">7 Vasos</span></button>
     </div>
+
+    <main class="relative w-full max-w-4xl flex-1 flex flex-col justify-center items-center">
+        <div class="table-mat relative w-full h-[380px] sm:h-[460px] rounded-3xl overflow-hidden flex items-center justify-center">
+            
+            <!-- Canvas principal donde se dibujan los vasos y la piedra -->
+            <canvas id="gameCanvas" class="w-full h-full cursor-pointer"></canvas>
+
+            <!-- Banner o Mensaje sobre la mesa de juego -->
+            <div id="status-banner" class="absolute top-4 left-1/2 -translate-x-1/2 bg-zinc-950/80 border border-amber-500/30 backdrop-blur-md px-6 py-2 rounded-full text-xs sm:text-sm font-semibold text-amber-300 shadow-lg transition-all duration-300 text-center pointer-events-none">
+                Presiona "Iniciar Mezcla" para observar la piedra
+            </div>
+
+            <!-- Modal / Pop-up de Resultado (Victoria/Derrota) -->
+            <div id="result-modal" class="hidden absolute inset-0 bg-zinc-950/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20 animate-fade-in">
+                <div id="modal-icon-container" class="mb-3 p-4 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                    <svg id="success-icon" class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <svg id="fail-icon" class="w-12 h-12 hidden text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </div>
+                <h2 id="result-title" class="text-2xl sm:text-3xl font-extrabold text-white mb-2">¡Correcto!</h2>
+                <p id="result-desc" class="text-sm text-zinc-300 max-w-md mb-6">¡Has mantenido la vista fija en la piedra perfectamente!</p>
+                
+                <div class="flex flex-wrap justify-center gap-3">
+                    <button id="retry-btn" class="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-sm rounded-xl border border-zinc-600 transition active:scale-95 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        Repetir Nivel
+                    </button>
+                    <button id="next-btn" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-extrabold text-sm rounded-xl shadow-lg transition active:scale-95 flex items-center gap-2">
+                        Siguiente Nivel
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="w-full max-w-4xl mt-3 flex justify-center">
+        <button id="start-btn" class="w-full sm:w-auto px-10 py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-zinc-950 font-black text-base uppercase tracking-wider rounded-2xl shadow-xl shadow-amber-500/20 active:scale-95 transition-all">
+            ¡Iniciar Mezcla!
+        </button>
+    </footer>
+
+    <script>
+        // Sistema de audio sintetizado con Web Audio API para no depender de archivos externos
+        class SoundEffects {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+            }
+
+            playLift() {
+                if (this.muted || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(450, this.ctx.currentTime + 0.18);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.18);
+            }
+
+            playSwap() {
+                if (this.muted || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.12);
+            }
+
+            playWin() {
+                if (this.muted || !this.ctx) return;
+                const notes = [261.63, 329.63, 392.00, 523.25];
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.08);
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.08 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + idx * 0.08);
+                    osc.stop(this.ctx.currentTime + idx * 0.08 + 0.3);
+                });
+            }
+
+            playLose() {
+                if (this.muted || !this.ctx) return;
+                const notes = [300, 260, 220, 180];
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.1);
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime + idx * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.1 + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + idx * 0.1);
+                    osc.stop(this.ctx.currentTime + idx * 0.1 + 0.2);
+                });
+            }
+        }
+
+        const sounds = new SoundEffects();
+    </script>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Assets
-        const imgFondo = new Image();
-        imgFondo.src = './img/fondo.jpg';
-
-        const imgBalde = new Image();
-        imgBalde.src = './img/balde.png';
-
-        const imgSheet = new Image();
-        imgSheet.src = './img/materiales.jpg';
-
-        const imgConstructor = new Image();
-        imgConstructor.src = './img/constructor.jpeg';
-
-        const TIPOS_ITEMS = {
-            ladrillo: { nombre: 'Ladrillo', esMaterial: true, fuente: 'sheet', crop: { sx: 215, sy: 50, sw: 175, sh: 120 } },
-            bloques:  { nombre: 'Bloque',   esMaterial: true, fuente: 'sheet', crop: { sx: 250, sy: 220, sw: 130, sh: 150 } },
-            tubos:    { nombre: 'Varilla',  esMaterial: true, fuente: 'sheet', crop: { sx: 20,  sy: 250, sw: 200, sh: 100 } },
-            arena:    { nombre: 'Arena',    esMaterial: true, fuente: 'sheet', crop: { sx: 220, sy: 420, sw: 180, sh: 160 } },
-            grava:    { nombre: 'Grava',    esMaterial: true, fuente: 'sheet', crop: { sx: 410, sy: 425, sw: 180, sh: 150 } },
-            madera:   { nombre: 'Madera',   esMaterial: true, fuente: 'sheet', crop: { sx: 20,  sy: 40,  sw: 170, sh: 130 } },
-            agua:     { nombre: 'Agua',     esMaterial: true, fuente: 'balde' },
-            platano:  { nombre: 'Plátano',  esMaterial: false, fuente: 'vector' },
-            botella:  { nombre: 'Botella',  esMaterial: false, fuente: 'vector' }
+        // Configuración de los 5 Niveles
+        const LEVEL_CONFIGS = {
+            1: { cups: 3, speed: 650, swaps: 5, name: "Nivel 1: Principiante" },
+            2: { cups: 4, speed: 500, swaps: 8, name: "Nivel 2: Aficionado" },
+            3: { cups: 5, speed: 380, swaps: 11, name: "Nivel 3: Avanzado" },
+            4: { cups: 6, speed: 280, swaps: 14, name: "Nivel 4: Experto" },
+            5: { cups: 7, speed: 190, swaps: 18, name: "Nivel 5: Maestro" }
         };
 
-        class Mision {
-            constructor(titulo, requeridos) {
-                this.titulo = titulo;
-                this.requeridos = { ...requeridos };
-                this.recolectados = {};
-                for (let k in requeridos) this.recolectados[k] = 0;
+        // Estado Global del Juego
+        let currentLevel = 1;
+        let gameState = 'IDLE'; // 'IDLE', 'SHOWING', 'SHUFFLING', 'GUESSING', 'RESULT'
+        let cups = [];
+        let stoneIndex = 0; // Índice de la posición del vaso que tiene la piedra
+        let currentSwapIndex = 0;
+        let swapQueue = [];
+        let streak = 0;
+        let bestStreak = 0;
+
+        // Variables de Animación de Intercambio
+        let activeSwap = null; // { cupA, cupB, startTime, duration, arcDirection }
+
+        // Mapeo de Posiciones de los Vasos
+        let slotPositions = [];
+
+        class Cup {
+            constructor(id) {
+                this.id = id;
+                this.x = 0;
+                this.y = 0;
+                this.liftY = 0; // Para animación de destape / levantar
+                this.scale = 1.0;
+                this.isHighlighted = false;
             }
 
-            esNecesario(tipo) {
-                return (tipo in this.requeridos) && (this.recolectados[tipo] < this.requeridos[tipo]);
-            }
+            draw(ctx, width, height) {
+                const cupWidth = Math.min(width / (cups.length + 1.2), 95);
+                const cupHeight = cupWidth * 1.25;
+                const drawY = this.y - this.liftY;
 
-            registrar(tipo) {
-                if (this.esNecesario(tipo)) {
-                    this.recolectados[tipo]++;
-                    return true;
-                }
-                return false;
-            }
-
-            estaCompletada() {
-                for (let k in this.requeridos) {
-                    if (this.recolectados[k] < this.requeridos[k]) return false;
-                }
-                return true;
-            }
-        }
-
-        const LISTA_MISIONES = [
-            () => new Mision("¡Pared de Ladrillo!", { ladrillo: 4, agua: 2 }),
-            () => new Mision("¡Mezcla de Concreto!", { bloques: 3, agua: 2, grava: 3 }),
-            () => new Mision("¡Estructura e Izaje!", { tubos: 3, madera: 2, arena: 2 })
-        ];
-
-        class Albanil {
-            constructor(cw, ch) {
-                this.cw = cw;
-                this.ch = ch;
-                this.ancho = 160;
-                this.alto = 120;
-                this.x = cw / 2 - this.ancho / 2;
-                this.y = ch - this.alto - 15;
-                this.velocidad = 11;
-                this.movLado = 0;
-                this.targetX = null;
-            }
-
-            mover() {
-                if (this.targetX !== null) {
-                    const diff = this.targetX - (this.x + this.ancho / 2);
-                    if (Math.abs(diff) > 2) {
-                        this.x += diff * 0.25;
-                    } else {
-                        this.x = this.targetX - this.ancho / 2;
-                    }
-                } else if (this.movLado !== 0) {
-                    this.x += this.movLado * this.velocidad;
-                }
-
-                if (this.x < 0) this.x = 0;
-                if (this.x + this.ancho > this.cw) this.x = this.cw - this.ancho;
-            }
-
-            getHitboxCarretilla() {
-                // Posición exacta del cubo de la carretilla en constructor.jpeg
-                return {
-                    x: this.x + (this.ancho * 0.48),
-                    y: this.y + (this.alto * 0.45),
-                    ancho: this.ancho * 0.42,
-                    alto: this.alto * 0.35
-                };
-            }
-
-            dibujar(ctx) {
                 ctx.save();
+                ctx.translate(this.x, drawY);
 
-                if (imgConstructor.complete && imgConstructor.naturalWidth !== 0) {
-                    // Mezcla Multiply para remover el fondo blanco plano de constructor.jpeg
-                    ctx.globalCompositeOperation = 'multiply';
-                    ctx.drawImage(imgConstructor, this.x, this.y, this.ancho, this.alto);
-                } else {
-                    // Fallback vectorial
-                    ctx.fillStyle = '#ea580c';
-                    ctx.fillRect(this.x, this.y, this.ancho, this.alto);
-                }
-
-                ctx.restore();
-            }
-        }
-
-        class Item {
-            constructor(cw, tipoClave, velocidad) {
-                this.tipoClave = tipoClave;
-                this.info = TIPOS_ITEMS[tipoClave];
-                this.ancho = 55;
-                this.alto = 55;
-                this.x = Math.random() * (cw - this.ancho - 40) + 20;
-                this.y = -60;
-                this.velocidadY = velocidad;
-            }
-
-            actualizar() {
-                this.y += this.velocidadY;
-            }
-
-            getHitbox() {
-                return { x: this.x, y: this.y, ancho: this.ancho, alto: this.alto };
-            }
-
-            dibujar(ctx) {
-                ctx.save();
-
-                // Tarjeta limpia con bordes redondeados y sombra
-                ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-                ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
-                ctx.shadowBlur = 8;
-                ctx.shadowOffsetY = 4;
-
+                // Sombra del vaso en la mesa
                 ctx.beginPath();
-                ctx.roundRect(this.x, this.y, this.ancho, this.alto, 10);
+                const shadowY = this.y + cupHeight / 2 - drawY;
+                const shadowAlpha = Math.max(0.05, 0.35 - (this.liftY / 250));
+                ctx.ellipse(0, shadowY, (cupWidth / 2) * (1 + this.liftY / 300), 12, 0, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 0, 0, ${shadowAlpha})`;
                 ctx.fill();
 
-                ctx.shadowColor = 'transparent';
+                // Cuerpo del Vaso (Gradiente Metálico / Neón Pulido)
+                const grad = ctx.createLinearGradient(-cupWidth / 2, 0, cupWidth / 2, 0);
+                grad.addColorStop(0, '#c2410c');
+                grad.addColorStop(0.3, '#f97316');
+                grad.addColorStop(0.6, '#fb923c');
+                grad.addColorStop(1, '#9a3412');
 
-                if (this.info.fuente === 'sheet') {
-                    if (imgSheet.complete && imgSheet.naturalWidth !== 0) {
-                        const c = this.info.crop;
-                        ctx.drawImage(imgSheet, c.sx, c.sy, c.sw, c.sh, this.x + 5, this.y + 5, this.ancho - 10, this.alto - 10);
-                    }
-                } else if (this.info.fuente === 'balde') {
-                    if (imgBalde.complete && imgBalde.naturalWidth !== 0) {
-                        ctx.drawImage(imgBalde, this.x + 5, this.y + 5, this.ancho - 10, this.alto - 10);
-                    }
-                } else if (this.info.fuente === 'vector') {
-                    if (this.tipoClave === 'platano') {
-                        ctx.fillStyle = '#facc15';
-                        ctx.beginPath();
-                        ctx.arc(this.x + 27, this.y + 27, 14, 0, Math.PI);
-                        ctx.fill();
-                    } else if (this.tipoClave === 'botella') {
-                        ctx.fillStyle = '#22c55e';
-                        ctx.fillRect(this.x + 22, this.y + 12, 11, 30);
-                    }
+                // Forma Trapezoidal del Vaso
+                ctx.beginPath();
+                ctx.moveTo(-cupWidth / 2 * 0.72, -cupHeight / 2); // Borde superior
+                ctx.lineTo(cupWidth / 2 * 0.72, -cupHeight / 2);
+                ctx.lineTo(cupWidth / 2, cupHeight / 2 - 8);     // Borde inferior
+                ctx.quadraticCurveTo(cupWidth / 2, cupHeight / 2, cupWidth / 2 - 8, cupHeight / 2);
+                ctx.lineTo(-cupWidth / 2 + 8, cupHeight / 2);
+                ctx.quadraticCurveTo(-cupWidth / 2, cupHeight / 2, -cupWidth / 2, cupHeight / 2 - 8);
+                ctx.closePath();
+
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // Borde de adorno / Anillos del Vaso
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#ea580c';
+                ctx.stroke();
+
+                // Brillo especular superior
+                ctx.beginPath();
+                ctx.ellipse(0, -cupHeight / 2, cupWidth / 2 * 0.72, 6, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffedd5';
+                ctx.fill();
+
+                // Anillo inferior de la base
+                ctx.beginPath();
+                ctx.ellipse(0, cupHeight / 2 - 4, cupWidth / 2 - 4, 5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0,0,0,0.25)';
+                ctx.fill();
+
+                // Resplandor si está seleccionado
+                if (this.isHighlighted) {
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
                 }
 
                 ctx.restore();
             }
-        }
 
-        class Juego {
-            constructor() {
-                this.albanil = new Albanil(canvas.width, canvas.height);
-                this.items = [];
-                this.misionActual = null;
-                this.puntos = 0;
-                this.vidas = 3;
-                this.estado = 'MENU';
-                this.dificultad = 'normal';
-
-                this.configDiff = {
-                    facil:   { velBase: 2.5, spawnRate: 1000 },
-                    normal:  { velBase: 4.0, spawnRate: 750 },
-                    dificil: { velBase: 6.0, spawnRate: 550 }
+            // Devuelve el área interactiva (Bounding Box)
+            getBounds(width) {
+                const cupWidth = Math.min(width / (cups.length + 1.2), 95);
+                const cupHeight = cupWidth * 1.25;
+                return {
+                    left: this.x - cupWidth / 2,
+                    right: this.x + cupWidth / 2,
+                    top: this.y - cupHeight / 2 - this.liftY,
+                    bottom: this.y + cupHeight / 2
                 };
-
-                this.intervaloSpawn = null;
-                this.initListeners();
-            }
-
-            getCanvasX(e) {
-                const rect = canvas.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                return (clientX - rect.left) * (canvas.width / rect.width);
-            }
-
-            initListeners() {
-                // Teclado
-                window.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowLeft' || e.key === 'a') {
-                        this.albanil.targetX = null;
-                        this.albanil.movLado = -1;
-                    }
-                    if (e.key === 'ArrowRight' || e.key === 'd') {
-                        this.albanil.targetX = null;
-                        this.albanil.movLado = 1;
-                    }
-                });
-
-                window.addEventListener('keyup', (e) => {
-                    if ((e.key === 'ArrowLeft' || e.key === 'a') && this.albanil.movLado === -1) this.albanil.movLado = 0;
-                    if ((e.key === 'ArrowRight' || e.key === 'd') && this.albanil.movLado === 1) this.albanil.movLado = 0;
-                });
-
-                // Mouse Move
-                canvas.addEventListener('mousemove', (e) => {
-                    if (this.estado === 'JUGANDO') {
-                        this.albanil.targetX = this.getCanvasX(e);
-                    }
-                });
-
-                // Touch / Móvil drag
-                const handleTouch = (e) => {
-                    if (this.estado === 'JUGANDO' && e.touches.length > 0) {
-                        this.albanil.targetX = this.getCanvasX(e);
-                    }
-                };
-
-                canvas.addEventListener('touchstart', handleTouch, { passive: true });
-                canvas.addEventListener('touchmove', handleTouch, { passive: true });
-
-                // Botones dificultad
-                document.querySelectorAll('.diff-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        document.querySelectorAll('.diff-btn').forEach(b => b.classList.add('btn-secondary'));
-                        e.target.classList.remove('btn-secondary');
-                        this.dificultad = e.target.dataset.diff;
-                    });
-                });
-
-                document.getElementById('start-btn').addEventListener('click', () => this.iniciar());
-                document.getElementById('restart-btn').addEventListener('click', () => this.iniciar());
-            }
-
-            iniciar() {
-                this.puntos = 0;
-                this.vidas = 3;
-                this.items = [];
-                this.estado = 'JUGANDO';
-                
-                document.getElementById('start-modal').classList.add('hidden');
-                document.getElementById('gameover-modal').classList.add('hidden');
-                document.getElementById('ui-layer').classList.remove('hidden');
-
-                this.siguienteMision();
-                this.actualizarHUD();
-
-                if (this.intervaloSpawn) clearInterval(this.intervaloSpawn);
-                
-                const cfg = this.configDiff[this.dificultad];
-                this.intervaloSpawn = setInterval(() => this.generarItem(), cfg.spawnRate);
-
-                requestAnimationFrame(() => this.loop());
-            }
-
-            siguienteMision() {
-                const idx = Math.floor(Math.random() * LISTA_MISIONES.length);
-                this.misionActual = LISTA_MISIONES[idx]();
-                this.actualizarHUDMision();
-            }
-
-            generarItem() {
-                if (this.estado !== 'JUGANDO') return;
-                const claves = Object.keys(TIPOS_ITEMS);
-                const claveAleatoria = claves[Math.floor(Math.random() * claves.length)];
-                const vel = this.configDiff[this.dificultad].velBase + Math.random() * 1.5;
-                this.items.push(new Item(canvas.width, claveAleatoria, vel));
-            }
-
-            detectarColision(rect1, rect2) {
-                return (
-                    rect1.x < rect2.x + rect2.ancho &&
-                    rect1.x + rect1.ancho > rect2.x &&
-                    rect1.y < rect2.y + rect2.alto &&
-                    rect1.y + rect1.alto > rect2.y
-                );
-            }
-
-            actualizar() {
-                if (this.estado !== 'JUGANDO') return;
-
-                this.albanil.mover();
-                const hbCarretilla = this.albanil.getHitboxCarretilla();
-
-                for (let i = this.items.length - 1; i >= 0; i--) {
-                    const item = this.items[i];
-                    item.actualizar();
-
-                    if (this.detectarColision(hbCarretilla, item.getHitbox())) {
-                        this.procesarCaptura(item);
-                        this.items.splice(i, 1);
-                        continue;
-                    }
-
-                    if (item.y > canvas.height - 40) {
-                        if (this.misionActual.esNecesario(item.tipoClave)) {
-                            this.perderVida("¡Dejaste caer un material solicitado!");
-                        }
-                        this.items.splice(i, 1);
-                    }
-                }
-            }
-
-            procesarCaptura(item) {
-                if (this.misionActual.esNecesario(item.tipoClave)) {
-                    this.misionActual.registrar(item.tipoClave);
-                    this.puntos += 100;
-
-                    if (this.misionActual.estaCompletada()) {
-                        this.puntos += 500;
-                        this.siguienteMision();
-                    }
-                } else {
-                    this.puntos = Math.max(0, this.puntos - 50);
-                    this.perderVida(`¡Atrapaste ${item.info.nombre} no solicitado!`);
-                }
-                this.actualizarHUD();
-            }
-
-            perderVida(razon) {
-                this.vidas--;
-                this.actualizarHUD();
-                if (this.vidas <= 0) this.gameOver(razon);
-            }
-
-            actualizarHUD() {
-                document.getElementById('score-val').innerText = this.puntos;
-                document.getElementById('lives-val').innerText = '♥'.repeat(Math.max(0, this.vidas));
-                document.getElementById('difficulty-tag').innerText = this.dificultad.toUpperCase();
-                this.actualizarHUDMision();
-            }
-
-            actualizarHUDMision() {
-                if (!this.misionActual) return;
-                document.getElementById('mission-desc').innerText = this.misionActual.titulo;
-                const container = document.getElementById('mission-targets');
-                container.innerHTML = '';
-
-                for (let k in this.misionActual.requeridos) {
-                    const req = this.misionActual.requeridos[k];
-                    const rec = this.misionActual.recolectados[k];
-                    const badge = document.createElement('div');
-                    badge.className = `target-badge ${rec >= req ? 'complete' : ''}`;
-                    badge.innerText = `${TIPOS_ITEMS[k].nombre}: ${rec}/${req}`;
-                    container.appendChild(badge);
-                }
-            }
-
-            gameOver(razon) {
-                this.estado = 'GAMEOVER';
-                clearInterval(this.intervaloSpawn);
-                document.getElementById('gameover-reason').innerText = razon;
-                document.getElementById('final-score').innerText = this.puntos;
-                document.getElementById('gameover-modal').classList.remove('hidden');
-            }
-
-            dibujarEscenario() {
-                if (imgFondo.complete && imgFondo.naturalWidth !== 0) {
-                    ctx.drawImage(imgFondo, 0, 0, canvas.width, canvas.height);
-                } else {
-                    ctx.fillStyle = '#1e293b';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = '#334155';
-                    ctx.fillRect(0, canvas.height - 30, canvas.width, 30);
-                }
-            }
-
-            loop() {
-                if (this.estado !== 'JUGANDO') return;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                this.dibujarEscenario();
-
-                this.actualizar();
-                this.albanil.dibujar(ctx);
-                this.items.forEach(item => item.dibujar(ctx));
-
-                requestAnimationFrame(() => this.loop());
             }
         }
 
-        window.onload = () => { new Juego(); };
+        function drawStone(x, y, width) {
+            const cupWidth = Math.min(width / (cups.length + 1.2), 95);
+            const radius = Math.max(12, cupWidth * 0.22);
+
+            ctx.save();
+            ctx.translate(x, y + cupWidth * 0.4);
+
+            // Sombra de la piedra
+            ctx.beginPath();
+            ctx.ellipse(0, radius * 0.6, radius, radius * 0.35, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fill();
+
+            // Resplandor de la piedra
+            const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, radius * 2);
+            glow.addColorStop(0, 'rgba(59, 130, 246, 0.6)');
+            glow.addColorStop(1, 'rgba(59, 130, 246, 0)');
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 2, 0, Math.PI * 2);
+            ctx.fillStyle = glow;
+            ctx.fill();
+
+            // Cuerpo Facetado de la Piedra (Gema Azul)
+            const stoneGrad = ctx.createRadialGradient(-radius * 0.3, -radius * 0.3, 2, 0, 0, radius);
+            stoneGrad.addColorStop(0, '#93c5fd');
+            stoneGrad.addColorStop(0.4, '#3b82f6');
+            stoneGrad.addColorStop(0.8, '#1d4ed8');
+            stoneGrad.addColorStop(1, '#1e3a8a');
+
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fillStyle = stoneGrad;
+            ctx.fill();
+
+            // Brillo blanco cristalino
+            ctx.beginPath();
+            ctx.ellipse(-radius * 0.35, -radius * 0.35, radius * 0.3, radius * 0.18, -Math.PI / 4, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            const config = LEVEL_CONFIGS[currentLevel];
+            const numCups = config.cups;
+            const spacing = canvas.width / (numCups + 1);
+            
+            slotPositions = [];
+            for (let i = 0; i < numCups; i++) {
+                slotPositions.push((i + 1) * spacing);
+            }
+
+            // Reposicionar vasos instantáneamente si no se están animando
+            if (cups.length === numCups && !activeSwap) {
+                cups.forEach((cup, idx) => {
+                    cup.x = slotPositions[idx];
+                    cup.y = canvas.height * 0.62;
+                });
+            }
+        }
+
+        // Initialize Level Cups Structure
+        function initLevel(level) {
+            currentLevel = level;
+            const config = LEVEL_CONFIGS[level];
+            
+            cups = [];
+            for (let i = 0; i < config.cups; i++) {
+                cups.push(new Cup(i));
+            }
+
+            // Asignar aleatoriamente la piedra a un vaso
+            stoneIndex = Math.floor(Math.random() * config.cups);
+
+            // Actualizar interfaz
+            document.getElementById('level-title').textContent = config.name;
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                const btnLevel = parseInt(btn.dataset.level);
+                if (btnLevel === level) {
+                    btn.className = "level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-amber-500 text-zinc-950 shadow-md";
+                } else {
+                    btn.className = "level-btn flex-1 min-w-[70px] py-2 px-1 text-center rounded-xl font-bold text-xs sm:text-sm transition bg-zinc-800 text-zinc-400 hover:bg-zinc-700";
+                }
+            });
+
+            gameState = 'IDLE';
+            document.getElementById('result-modal').classList.add('hidden');
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('start-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+            updateStatusBanner('Presiona "¡Iniciar Mezcla!" para ver dónde está la piedra');
+
+            resizeCanvas();
+        }
+
+        function updateStatusBanner(text) {
+            document.getElementById('status-banner').textContent = text;
+        }
+
+        function generateSwapQueue() {
+            const config = LEVEL_CONFIGS[currentLevel];
+            const queue = [];
+            let lastA = -1, lastB = -1;
+
+            for (let i = 0; i < config.swaps; i++) {
+                let idxA, idxB;
+                do {
+                    idxA = Math.floor(Math.random() * config.cups);
+                    idxB = Math.floor(Math.random() * config.cups);
+                } while (idxA === idxB || (idxA === lastA && idxB === lastB) || (idxA === lastB && idxB === lastA));
+
+                lastA = idxA;
+                lastB = idxB;
+                queue.push([idxA, idxB]);
+            }
+            return queue;
+        }
+
+        function startGame() {
+            if (gameState !== 'IDLE') return;
+
+            sounds.init();
+            gameState = 'SHOWING';
+            document.getElementById('start-btn').disabled = true;
+            document.getElementById('start-btn').classList.add('opacity-50', 'cursor-not-allowed');
+
+            updateStatusBanner('¡Memoriza la posición de la piedra!');
+
+            // Animación: Levantamos el vaso con la piedra
+            const targetCup = cups[stoneIndex];
+            sounds.playLift();
+
+            let startTime = null;
+            const liftDuration = 600;
+            const holdDuration = 1000;
+
+            function animateLift(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+
+                if (elapsed < liftDuration) {
+                    // Subiendo vaso
+                    targetCup.liftY = (elapsed / liftDuration) * 80;
+                    requestAnimationFrame(animateLift);
+                } else if (elapsed < liftDuration + holdDuration) {
+                    // Mantener arriba
+                    targetCup.liftY = 80;
+                    requestAnimationFrame(animateLift);
+                } else if (elapsed < liftDuration * 2 + holdDuration) {
+                    // Bajando vaso
+                    const dropProgress = (elapsed - liftDuration - holdDuration) / liftDuration;
+                    targetCup.liftY = 80 * (1 - dropProgress);
+                    requestAnimationFrame(animateLift);
+                } else {
+                    targetCup.liftY = 0;
+                    // Comenzar mezcla inmediatamente
+                    startShuffle();
+                }
+            }
+
+            requestAnimationFrame(animateLift);
+        }
+
+        // Preparar e iniciar la fase de intercambio / Shuffle
+        function startShuffle() {
+            gameState = 'SHUFFLING';
+            updateStatusBanner('¡Sigue el vaso con la mirada! Mezclando...');
+            swapQueue = generateSwapQueue();
+            executeNextSwap();
+        }
+
+        function executeNextSwap() {
+            if (swapQueue.length === 0) {
+                // Finalizó el shuffling
+                gameState = 'GUESSING';
+                updateStatusBanner('¡¿Dónde está la piedra?! Haz clic sobre un vaso');
+                return;
+            }
+
+            const [idxA, idxB] = swapQueue.shift();
+            const cupA = cups[idxA];
+            const cupB = cups[idxB];
+            const config = LEVEL_CONFIGS[currentLevel];
+
+            // Si intercambio involucra al vaso con la piedra, actualizar el índice
+            if (stoneIndex === idxA) stoneIndex = idxB;
+            else if (stoneIndex === idxB) stoneIndex = idxA;
+
+            // Reorganizar el array de objetos en Javascript para mantener concordancia
+            cups[idxA] = cupB;
+            cups[idxB] = cupA;
+
+            sounds.playSwap();
+
+            activeSwap = {
+                cupA: cupA,
+                cupB: cupB,
+                startX_A: cupA.x,
+                startX_B: cupB.x,
+                targetX_A: slotPositions[idxB],
+                targetX_B: slotPositions[idxA],
+                startTime: performance.now(),
+                duration: config.speed
+            };
+
+            requestAnimationFrame(animateSwapStep);
+        }
+
+        function animateSwapStep(now) {
+            if (!activeSwap) return;
+
+            const elapsed = now - activeSwap.startTime;
+            const progress = Math.min(elapsed / activeSwap.duration, 1.0);
+
+            // Función de atenuación suave (Easing function: Smoothstep / Sine)
+            const ease = 0.5 - Math.cos(progress * Math.PI) / 2;
+
+            // Trayectoria Horizontal
+            activeSwap.cupA.x = activeSwap.startX_A + (activeSwap.targetX_A - activeSwap.startX_A) * ease;
+            activeSwap.cupB.x = activeSwap.startX_B + (activeSwap.targetX_B - activeSwap.startX_B) * ease;
+
+            // Arqueado Vertical para simular cruce en 3D (Uno pasa por delante/arriba y otro por atrás/abajo)
+            const arcHeight = 35 * Math.sin(progress * Math.PI);
+            activeSwap.cupA.y = (canvas.height * 0.62) - arcHeight;
+            activeSwap.cupB.y = (canvas.height * 0.62) + (arcHeight * 0.6);
+
+            if (progress < 1.0) {
+                requestAnimationFrame(animateSwapStep);
+            } else {
+                // Final de este swap individual
+                activeSwap.cupA.x = activeSwap.targetX_A;
+                activeSwap.cupB.x = activeSwap.targetX_B;
+                activeSwap.cupA.y = canvas.height * 0.62;
+                activeSwap.cupB.y = canvas.height * 0.62;
+                activeSwap = null;
+
+                // Continuar con el siguiente intercambio
+                executeNextSwap();
+            }
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar la piedra en la posición del vaso correspondiente (solo se ve si el vaso está levantado)
+            if (cups[stoneIndex]) {
+                drawStone(cups[stoneIndex].x, cups[stoneIndex].y, canvas.width);
+            }
+
+            // Dibujar todos los vasos
+            cups.forEach(cup => cup.draw(ctx, canvas.width, canvas.height));
+
+            requestAnimationFrame(render);
+        }
+
+        function handleCanvasClick(e) {
+            if (gameState !== 'GUESSING') return;
+
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            // Detectar en qué vaso se hizo clic
+            for (let i = 0; i < cups.length; i++) {
+                const bounds = cups[i].getBounds(canvas.width);
+                if (clickX >= bounds.left && clickX <= bounds.right && clickY >= bounds.top && clickY <= bounds.bottom) {
+                    processGuess(i);
+                    break;
+                }
+            }
+        }
+
+        function processGuess(selectedIndex) {
+            gameState = 'RESULT';
+            sounds.init();
+
+            const isCorrect = (selectedIndex === stoneIndex);
+            const selectedCup = cups[selectedIndex];
+            const realStoneCup = cups[stoneIndex];
+
+            sounds.playLift();
+
+            // Elevar el vaso seleccionado
+            let startTime = null;
+            function animateReveal(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+
+                if (elapsed < 500) {
+                    selectedCup.liftY = (elapsed / 500) * 80;
+                    if (!isCorrect && elapsed > 250) {
+                        // Si falló, también destapar gradualmente el correcto para mostrar dónde estaba
+                        realStoneCup.liftY = ((elapsed - 250) / 250) * 80;
+                    }
+                    requestAnimationFrame(animateReveal);
+                } else {
+                    selectedCup.liftY = 80;
+                    if (!isCorrect) realStoneCup.liftY = 80;
+                    showResultModal(isCorrect);
+                }
+            }
+
+            requestAnimationFrame(animateReveal);
+        }
+
+        function showResultModal(isWin) {
+            const modal = document.getElementById('result-modal');
+            const title = document.getElementById('result-title');
+            const desc = document.getElementById('result-desc');
+            const successIcon = document.getElementById('success-icon');
+            const failIcon = document.getElementById('fail-icon');
+            const iconContainer = document.getElementById('modal-icon-container');
+            const nextBtn = document.getElementById('next-btn');
+
+            modal.classList.remove('hidden');
+
+            if (isWin) {
+                sounds.playWin();
+                title.textContent = "¡Excelente Vista!";
+                title.className = "text-2xl sm:text-3xl font-extrabold text-emerald-400 mb-2";
+                desc.textContent = `¡Adivinaste correctamente en el Nivel ${currentLevel}!`;
+                
+                successIcon.classList.remove('hidden');
+                failIcon.classList.add('hidden');
+                iconContainer.className = "mb-3 p-4 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+
+                streak++;
+                if (streak > bestStreak) bestStreak = streak;
+
+                if (currentLevel < 5) {
+                    nextBtn.classList.remove('hidden');
+                } else {
+                    nextBtn.classList.add('hidden');
+                    desc.textContent = "¡Increíble! Has superado el Nivel 5 Maestro. ¡Eres imparable!";
+                }
+            } else {
+                sounds.playLose();
+                title.textContent = "¡Piedra Perdida!";
+                title.className = "text-2xl sm:text-3xl font-extrabold text-rose-400 mb-2";
+                desc.textContent = "Te has distraído un segundo. ¡Inténtalo de nuevo!";
+                
+                successIcon.classList.add('hidden');
+                failIcon.classList.remove('hidden');
+                iconContainer.className = "mb-3 p-4 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40";
+
+                streak = 0;
+                nextBtn.classList.add('hidden');
+            }
+
+            document.getElementById('streak-count').textContent = streak;
+            document.getElementById('best-streak').textContent = bestStreak;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        canvas.addEventListener('click', handleCanvasClick);
+
+        document.getElementById('start-btn').addEventListener('click', startGame);
+
+        document.getElementById('retry-btn').addEventListener('click', () => {
+            initLevel(currentLevel);
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentLevel < 5) {
+                initLevel(currentLevel + 1);
+            }
+        });
+
+        // Selector de Niveles
+        document.querySelectorAll('.level-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (gameState === 'SHUFFLING' || gameState === 'SHOWING') return;
+                const targetLevel = parseInt(e.currentTarget.dataset.level);
+                initLevel(targetLevel);
+            });
+        });
+
+        // Toggle Sonido
+        document.getElementById('sound-btn').addEventListener('click', () => {
+            sounds.muted = !sounds.muted;
+            document.getElementById('sound-icon-on').classList.toggle('hidden', sounds.muted);
+            document.getElementById('sound-icon-off').classList.toggle('hidden', !sounds.muted);
+        });
+
+        // Arranque inicial
+        window.onload = () => {
+            initLevel(1);
+            requestAnimationFrame(render);
+        };
     </script>
 </body>
 </html>
