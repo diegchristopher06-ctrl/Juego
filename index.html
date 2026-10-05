@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Construction Catcher - Juego Web</title>
+    <title>Construction Catcher: Misiones del Ingeniero</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -20,319 +20,434 @@
         }
     </style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
+<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
 
     <!-- CONTENEDOR PRINCIPAL DEL JUEGO -->
-    <div class="relative w-full max-w-4xl bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border-4 border-amber-500">
+    <div class="relative w-full max-w-4xl bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border-4 border-amber-500">
         
-        <!-- PANTALLA DE INICIO (PORTADA) -->
-        <div id="pantallaInicio" class="absolute inset-0 z-20 flex flex-col items-center justify-between p-6 bg-gradient-to-b from-sky-600 via-amber-700 to-amber-900 text-center">
+        <!-- PANTALLA DE INICIO / PORTADA -->
+        <div id="pantallaInicio" class="absolute inset-0 z-30 flex flex-col items-center justify-between p-6 bg-gradient-to-b from-sky-600 via-amber-800 to-slate-950 text-center">
             
-            <!-- TÍTULO PRINCIPAL CON ESTILO PIXEL/CONSTRUCCIÓN -->
-            <div class="mt-4">
-                <span class="inline-block bg-amber-500 text-slate-900 font-extrabold text-xs sm:text-sm px-3 py-1 rounded-full uppercase tracking-widest shadow-md mb-2">¡Obras en Marcha!</span>
-                <h1 class="font-pixel text-2xl sm:text-4xl md:text-5xl text-amber-400 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] leading-tight uppercase">
-                    CONSTRUCTION<br><span class="text-white">CATCHER</span>
+            <!-- HEADER DE PORTADA -->
+            <div class="mt-2">
+                <span class="inline-block bg-amber-500 text-slate-950 font-extrabold text-xs sm:text-sm px-3 py-1 rounded-full uppercase tracking-widest shadow-md mb-2">¡Nueva Orden en la Obra!</span>
+                <h1 class="font-pixel text-xl sm:text-3xl md:text-4xl text-amber-400 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] leading-snug uppercase">
+                    CONSTRUCTION CATCHER<br><span class="text-white text-base sm:text-2xl">Misiones del Ingeniero</span>
                 </h1>
-                <p class="text-amber-200 text-sm sm:text-base mt-2 font-semibold">¡Ayuda al albañil a recolectar solo los materiales de construcción!</p>
             </div>
 
-            <!-- ILUSTRACIÓN DE PORTADA BASADA EN LA IMAGEN -->
-            <div class="w-full max-w-lg bg-slate-900/60 p-4 rounded-xl border-2 border-amber-400/50 my-2 backdrop-blur-sm">
-                <div class="grid grid-cols-2 gap-3 text-left text-xs sm:text-sm">
-                    <div class="bg-emerald-950/80 p-2.5 rounded-lg border border-emerald-500/50">
-                        <p class="font-bold text-emerald-400 mb-1 flex items-center gap-1">
-                            <span>✅</span> RECOLECTA (+100 pts)
-                        </p>
-                        <ul class="list-disc list-inside text-emerald-200 text-xs space-y-0.5">
-                            <li>🧱 Ladrillos</li>
-                            <li>🧱 Saco de Cemento</li>
-                            <li>🪵 Tablas de Madera</li>
-                            <li>🛠️ Pala de Mano</li>
-                        </ul>
-                    </div>
-                    <div class="bg-rose-950/80 p-2.5 rounded-lg border border-rose-500/50">
-                        <p class="font-bold text-rose-400 mb-1 flex items-center gap-1">
-                            <span>❌</span> EVITA (-1 Vida)
-                        </p>
-                        <ul class="list-disc list-inside text-rose-200 text-xs space-y-0.5">
-                            <li>🍌 Cáskara de Plátano</li>
-                            <li>🍾 Botella Rota</li>
-                            <li>⚽ Pelota de Fútbol</li>
-                            <li>🐟 Pescado Podrido</li>
-                        </ul>
-                    </div>
+            <!-- INSTRUCCIONES Y REGLAS DE LAS MISIONES -->
+            <div class="w-full max-w-xl bg-slate-900/80 p-4 rounded-xl border border-amber-500/40 text-left text-xs sm:text-sm space-y-2 backdrop-blur-sm shadow-inner">
+                <p class="text-amber-300 font-bold flex items-center gap-2 text-sm sm:text-base">
+                    <span>👨‍🚒</span> Mensaje del Ingeniero de Obra:
+                </p>
+                <p class="text-slate-200">
+                    "¡Atención albañil! Te daré misiones específicas. Escucha con atención y junta <b>SOLO los materiales pedidos</b> para cada mezcla o estructura. ¡Si traes basura o materiales no solicitados, arruinarás el trabajo!"
+                </p>
+                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-700/60 text-xs">
+                    <div class="text-emerald-400 font-semibold">✅ Sigue la Orden: Completa la meta de la misión.</div>
+                    <div class="text-rose-400 font-semibold">❌ Evita Errores: Basura o material equivocado quita vida.</div>
                 </div>
             </div>
 
-            <!-- BOTÓN PARA JUGAR -->
-            <button id="btnIniciar" class="w-full max-w-xs bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-900 font-pixel text-lg sm:text-xl py-4 px-6 rounded-xl shadow-lg transform active:scale-95 transition-all border-b-4 border-amber-700 cursor-pointer">
-                ¡JUGAR AHORA!
+            <!-- SELECTOR DE DIFICULTAD -->
+            <div class="w-full max-w-md bg-slate-950/70 p-3 rounded-xl border border-slate-800">
+                <p class="text-xs font-pixel text-amber-400 mb-2 uppercase text-center">Selecciona la Dificultad</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <button id="btnDificultadFacil" class="btn-dificultad py-2 rounded-lg font-pixel text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border-2 border-slate-700 cursor-pointer transition-all" data-dificultad="FACIL">
+                        🟢 FÁCIL
+                    </button>
+                    <button id="btnDificultadNormal" class="btn-dificultad py-2 rounded-lg font-pixel text-xs bg-amber-500 text-slate-950 font-bold border-2 border-amber-300 cursor-pointer shadow-lg transition-all" data-dificultad="NORMAL">
+                        🟡 NORMAL
+                    </button>
+                    <button id="btnDificultadDificil" class="btn-dificultad py-2 rounded-lg font-pixel text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border-2 border-slate-700 cursor-pointer transition-all" data-dificultad="DIFICIL">
+                        🔴 DIFÍCIL
+                    </button>
+                </div>
+            </div>
+
+            <!-- BOTÓN JUGAR -->
+            <button id="btnIniciar" class="w-full max-w-xs bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-pixel text-base sm:text-lg py-3.5 px-6 rounded-xl shadow-xl transform active:scale-95 transition-all border-b-4 border-amber-700 cursor-pointer uppercase">
+                ¡Recibir Primera Misión!
             </button>
         </div>
 
         <!-- PANTALLA DE GAME OVER -->
-        <div id="pantallaGameOver" class="hidden absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-slate-950/90 backdrop-blur-md text-center">
-            <h2 class="font-pixel text-3xl sm:text-5xl text-rose-500 mb-2 drop-shadow-md">GAME OVER</h2>
-            <p class="text-slate-300 mb-6 text-sm sm:text-base">¡Se te cayeron demasiados materiales o atrapaste basura!</p>
+        <div id="pantallaGameOver" class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center p-6 bg-slate-950/95 backdrop-blur-md text-center">
+            <h2 class="font-pixel text-2xl sm:text-4xl text-rose-500 mb-2 drop-shadow-md">¡OBRA SUSPENDIDA!</h2>
+            <p id="motivoGameOver" class="text-slate-300 mb-6 text-xs sm:text-sm max-w-md">El Ingeniero te ha despedido por arruinar los materiales.</p>
             
-            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 mb-6 w-full max-w-xs">
-                <p class="text-slate-400 text-xs uppercase tracking-wider mb-1">Puntaje Final</p>
+            <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 mb-6 w-full max-w-xs shadow-lg">
+                <p class="text-slate-400 text-xs uppercase tracking-wider mb-1">Puntaje Total</p>
                 <p id="puntajeFinal" class="font-pixel text-3xl text-amber-400">0</p>
             </div>
 
-            <button id="btnReiniciar" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-pixel text-base sm:text-lg py-3 px-8 rounded-xl shadow-lg transform active:scale-95 transition-all cursor-pointer">
-                REINTENTAR
+            <button id="btnReiniciar" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-pixel text-sm sm:text-base py-3 px-8 rounded-xl shadow-lg transform active:scale-95 transition-all cursor-pointer">
+                NUEVO CONTRATO (REINTENTAR)
             </button>
         </div>
 
-        <!-- BARRA SUPERIOR DE ESTADÍSTICAS -->
-        <div class="bg-slate-950 px-4 py-3 flex justify-between items-center border-b border-slate-700 font-pixel text-xs sm:text-sm">
-            <div class="flex items-center gap-2">
-                <span class="text-amber-400">PUNTOS:</span>
-                <span id="txtPuntos" class="text-white text-base">0</span>
+        <!-- PANEL SUPERIOR INTERACTIVO (HUD + CARTEL DEL INGENIERO) -->
+        <div class="bg-slate-950 px-3 py-2 flex flex-col gap-2 border-b border-slate-800">
+            <!-- LIN 1: METRICAS BASICAS -->
+            <div class="flex justify-between items-center font-pixel text-xs sm:text-sm">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-amber-400">PUNTOS:</span>
+                    <span id="txtPuntos" class="text-white">0</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="text-rose-400">VIDAS:</span>
+                    <span id="txtVidas" class="text-rose-500">❤️❤️❤️</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="text-slate-400">MODO:</span>
+                    <span id="txtModo" class="text-amber-400 font-bold">NORMAL</span>
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="text-rose-400">VIDAS:</span>
-                <span id="txtVidas" class="text-rose-500 text-base">❤️❤️❤️</span>
+
+            <!-- LIN 2: CAJA DE MISION DEL INGENIERO -->
+            <div class="bg-slate-900/90 border-2 border-amber-500/60 rounded-xl p-2.5 flex flex-col sm:flex-row items-center gap-3">
+                <div class="flex items-center gap-2 min-w-fit">
+                    <span class="text-2xl bg-slate-800 p-1.5 rounded-lg border border-slate-700">👨‍🚒</span>
+                    <div>
+                        <p class="text-[10px] text-amber-400 font-pixel uppercase">Ingeniero de Obra:</p>
+                        <p id="txtTituloMision" class="font-bold text-xs sm:text-sm text-white">Cargando misión...</p>
+                    </div>
+                </div>
+
+                <!-- DESCRIPCION Y BARRA DE PROGRESO -->
+                <div class="flex-1 w-full space-y-1">
+                    <div class="flex justify-between text-xs">
+                        <span id="txtDescripcionMision" class="text-slate-300 text-[11px]">Recoge los ítems solicitados.</span>
+                        <span id="txtProgresoMision" class="font-pixel text-amber-400 text-[10px]">0/5</span>
+                    </div>
+                    <!-- Barra de progreso -->
+                    <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
+                        <div id="barraProgreso" class="bg-gradient-to-r from-amber-500 to-emerald-400 h-full w-0% transition-all duration-300"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- CANVAS DONDE SE DIBUJA EL JUEGO -->
-        <div class="relative w-full aspect-[16/9] bg-slate-800">
+        <!-- CANVAS DEL JUEGO -->
+        <div class="relative w-full aspect-[16/9] bg-slate-950">
             <canvas id="gameCanvas" class="w-full h-full block"></canvas>
         </div>
 
-        <!-- CONTROLES TÁCTILES PARA MÓVILES -->
-        <div class="sm:hidden bg-slate-950 p-3 flex justify-between items-center gap-4 border-t border-slate-800">
-            <button id="btnIzquierda" class="flex-1 bg-slate-800 active:bg-amber-500 text-white font-bold py-4 rounded-xl text-xl shadow-md border border-slate-700 select-none">
-                ⬅️ Izquierda
+        <!-- CONTROLES TÁCTILES MÓVILES -->
+        <div class="sm:hidden bg-slate-950 p-2.5 flex justify-between items-center gap-3 border-t border-slate-800">
+            <button id="btnIzquierda" class="flex-1 bg-slate-800 active:bg-amber-500 text-white font-bold py-3 rounded-xl text-lg shadow-md border border-slate-700 select-none">
+                ⬅️️ Izquierda
             </button>
-            <button id="btnDerecha" class="flex-1 bg-slate-800 active:bg-amber-500 text-white font-bold py-4 rounded-xl text-xl shadow-md border border-slate-700 select-none">
+            <button id="btnDerecha" class="flex-1 bg-slate-800 active:bg-amber-500 text-white font-bold py-3 rounded-xl text-lg shadow-md border border-slate-700 select-none">
                 Derecha ➡️
             </button>
         </div>
     </div>
 
-    <!-- GUÍA RÁPIDA DE CONCEPTOS DE CÓDIGO -->
-    <div class="mt-4 text-xs text-slate-400 max-w-4xl w-full bg-slate-800/50 p-3 rounded-lg border border-slate-700/50 flex flex-wrap justify-between gap-2">
-        <span>💡 <b>POO JavaScript:</b> Usa Clases (`Albanil`, `Item`, `Juego`).</span>
-        <span>⌨️ <b>Controles:</b> Teclas Flechas / A y D.</span>
-    </div>
-
+    <!-- SCRIPT PRINCIPAL CON POO Y COMENTARIOS DIDÁCTICOS -->
     <script>
         // =========================================================================
-        // ARCHIVO ÚNICO CON PROGRAMACIÓN ORIENTADA A OBJETOS (POO)
+        // CONSTANTES Y CONFIGURACIÓN DEL CATÁLOGO DE OBJETOS
         // =========================================================================
 
-        // Referencias a elementos del DOM (Document Object Model)
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        const txtPuntos = document.getElementById('txtPuntos');
-        const txtVidas = document.getElementById('txtVidas');
-        const pantallaInicio = document.getElementById('pantallaInicio');
-        const pantallaGameOver = document.getElementById('pantallaGameOver');
-        const puntajeFinal = document.getElementById('puntajeFinal');
-        const btnIniciar = document.getElementById('btnIniciar');
-        const btnReiniciar = document.getElementById('btnReiniciar');
-
-        // Ajustar resolución interna del Canvas (Mantiene proporción 16:9)
+        // Dimensiones virtuales del juego
         const ANCHO_CANVAS = 800;
         const ALTO_CANVAS = 450;
         canvas.width = ANCHO_CANVAS;
         canvas.height = ALTO_CANVAS;
 
-        // Lista de ítems válidos (Materiales de construcción) e inválidos (Basura)
-        const TIPOS_ITEMS = [
-            // VÁLIDOS (Suma puntos)
-            { nombre: 'Cemento', esValido: true, emoji: '🧱', color: '#a8a29e', puntos: 100 },
-            { nombre: 'Ladrillo', esValido: true, emoji: '🧱', color: '#b91c1c', puntos: 100 },
-            { nombre: 'Madera', esValido: true, emoji: '🪵', color: '#854d0e', puntos: 100 },
-            { nombre: 'Pala', esValido: true, emoji: '🛠️️', color: '#475569', puntos: 100 },
+        // Referencias del DOM
+        const txtPuntos = document.getElementById('txtPuntos');
+        const txtVidas = document.getElementById('txtVidas');
+        const txtModo = document.getElementById('txtModo');
+        const txtTituloMision = document.getElementById('txtTituloMision');
+        const txtDescripcionMision = document.getElementById('txtDescripcionMision');
+        const txtProgresoMision = document.getElementById('txtProgresoMision');
+        const barraProgreso = document.getElementById('barraProgreso');
+        const pantallaInicio = document.getElementById('pantallaInicio');
+        const pantallaGameOver = document.getElementById('pantallaGameOver');
+        const puntajeFinal = document.getElementById('puntajeFinal');
+        const motivoGameOver = document.getElementById('motivoGameOver');
+        const btnIniciar = document.getElementById('btnIniciar');
+        const btnReiniciar = document.getElementById('btnReiniciar');
 
-            // INVÁLIDOS (Resta vida / puntos)
-            { nombre: 'Plátano', esValido: false, emoji: '🍌', color: '#eab308', puntos: -50 },
-            { nombre: 'Botella', esValido: false, emoji: '🍾', color: '#16a34a', puntos: -50 },
-            { nombre: 'Pelota', esValido: false, emoji: '⚽', color: '#ffffff', puntos: -50 },
-            { nombre: 'Pescado', esValido: false, emoji: '🐟', color: '#38bdf8', puntos: -50 }
+        // Catálogo maestro de ítems que pueden caer
+        const CATALOGO_ITEMS = {
+            // MATERIALES VÁLIDOS
+            LADRILLO: { id: 'LADRILLO', nombre: 'Ladrillo', emoji: '🧱', esBasura: false },
+            CEMENTO: { id: 'CEMENTO', nombre: 'Cemento', emoji: '🛍️', esBasura: false },
+            AGUA: { id: 'AGUA', nombre: 'Cubeta de Agua', emoji: '🪣', esBasura: false },
+            ARENA: { id: 'ARENA', nombre: 'Saco de Arena', emoji: '⌛', esBasura: false },
+            GRAVA: { id: 'GRAVA', nombre: 'Grava', emoji: '🪨', esBasura: false },
+            VARILLA: { id: 'VARILLA', nombre: 'Varilla de Hierro', emoji: '💈', esBasura: false },
+
+            // BASURA / OBJETOS PROHIBIDOS
+            PLATANO: { id: 'PLATANO', nombre: 'Plátano', emoji: '🍌', esBasura: true },
+            BOTELLA: { id: 'BOTELLA', nombre: 'Botella Rota', emoji: '🍾', esBasura: true },
+            PELOTA: { id: 'PELOTA', nombre: 'Pelota', emoji: '⚽', esBasura: true },
+            PESCADO: { id: 'PESCADO', nombre: 'Pescado Podrido', emoji: '🐟', esBasura: true },
+            CACTUS: { id: 'CACTUS', nombre: 'Cactus', emoji: '🌵', esBasura: true }
+        };
+
+        // =========================================================================
+        // CLASE 1: Mision
+        // Define el objetivo asignado por el Ingeniero.
+        // =========================================================================
+        class Mision {
+            constructor(titulo, descripcion, materialesSolicitados, meta) {
+                this.titulo = titulo;
+                this.descripcion = descripcion;
+                // Arreglo con los IDs de materiales que SÍ sirven para esta misión
+                this.materialesSolicitados = materialesSolicitados;
+                this.meta = meta; // Cantidad a recolectar
+                this.actual = 0;  // Progreso actual
+            }
+
+            // MÉTODO: Verifica si el ítem atrapado forma parte de esta misión
+            esMaterialCorrecto(itemId) {
+                return this.materialesSolicitados.includes(itemId);
+            }
+
+            // MÉTODO: Suma progreso si es correcto
+            registrarAcierto() {
+                this.actual++;
+                if (this.actual > this.meta) {
+                    this.actual = this.meta;
+                }
+            }
+
+            // MÉTODO: Retorna si la misión se cumplió
+            estaCompletada() {
+                return this.actual >= this.meta;
+            }
+
+            // MÉTODO: Retorna porcentaje de avance para la barra del HUD
+            obtenerPorcentaje() {
+                return (this.actual / this.meta) * 100;
+            }
+        }
+
+        // BANCO DE MISIONES DINÁMICAS
+        const LISTA_MISIONES = [
+            () => new Mision(
+                "¡Levantar una Pared de Ladrillos!",
+                "Busca únicamente: Ladrillos 🧱",
+                ['LADRILLO'],
+                5
+            ),
+            () => new Mision(
+                "¡Mezcla de Concreto Fresco!",
+                "Junta: Cemento 🛍️, Agua 🪣, Arena ⌛ y Grava 🪨",
+                ['CEMENTO', 'AGUA', 'ARENA', 'GRAVA'],
+                6
+            ),
+            () => new Mision(
+                "¡Estructura de Columnas!",
+                "Necesitamos: Varillas 💈 y Cemento 🛍️",
+                ['VARILLA', 'CEMENTO'],
+                6
+            ),
+            () => new Mision(
+                "¡Cimentación Básica!",
+                "Recoge solo: Ladrillos 🧱 y Grava 🪨",
+                ['LADRILLO', 'GRAVA'],
+                5
+            )
         ];
 
         // =========================================================================
-        // CLASE 1: Albanil
-        // Representa al personaje que mueve la carretilla.
+        // CLASE 2: Albanil
+        // Modela al personaje jugador y su movimiento.
         // =========================================================================
         class Albanil {
-            // El CONSTRUCTOR inicializa las propiedades de la instancia
             constructor(canvasAncho, canvasAlto) {
                 this.canvasAncho = canvasAncho;
                 this.canvasAlto = canvasAlto;
 
-                // Dimensiones del personaje
                 this.ancho = 90;
                 this.alto = 80;
 
-                // Posición inicial (centrado abajo)
                 this.x = (this.canvasAncho / 2) - (this.ancho / 2);
-                this.y = this.canvasAlto - this.alto - 15; // 15px sobre el suelo
+                this.y = this.canvasAlto - this.alto - 15;
 
-                // Velocidad de movimiento
-                this.velocidad = 8;
-
-                // Estados de movimiento
+                this.velocidad = 9;
                 this.moviendoIzquierda = false;
                 this.moviendoDerecha = false;
             }
 
-            // MÉTODO: Resetea la posición al reiniciar
             resetear() {
                 this.x = (this.canvasAncho / 2) - (this.ancho / 2);
                 this.moviendoIzquierda = false;
                 this.moviendoDerecha = false;
             }
 
-            // MÉTODO: Actualiza la posición según los controles activos
             actualizar() {
-                if (this.moviendoIzquierda) {
-                    this.x -= this.velocidad;
-                }
-                if (this.moviendoDerecha) {
-                    this.x += this.velocidad;
-                }
+                if (this.moviendoIzquierda) this.x -= this.velocidad;
+                if (this.moviendoDerecha) this.x += this.velocidad;
 
-                // LÍMITES EN PANTALLA: Evita que el albañil se salga de los bordes
+                // Control de bordes
                 if (this.x < 0) this.x = 0;
                 if (this.x + this.ancho > this.canvasAncho) {
                     this.x = this.canvasAncho - this.ancho;
                 }
             }
 
-            // MÉTODO: Dibuja al albañil y su carretilla en el Canvas
             dibujar(contexto) {
-                // Dibujar sombra
-                contexto.fillStyle = 'rgba(0,0,0,0.2)';
+                // Sombra en el suelo
+                contexto.fillStyle = 'rgba(0,0,0,0.25)';
                 contexto.beginPath();
-                contexto.ellipse(this.x + this.ancho / 2, this.y + this.alto - 5, this.ancho / 2, 8, 0, 0, Math.PI * 2);
+                contexto.ellipse(this.x + this.ancho / 2, this.y + this.alto - 5, this.ancho / 2.2, 8, 0, 0, Math.PI * 2);
                 contexto.fill();
 
-                // Cuerpo / Carretilla en el Canvas
-                // Albañil (Emoji / Gráfico Vectorial Simplificado)
+                // Dibujar albañil y carretilla usando caracteres emoji
                 contexto.font = '45px sans-serif';
                 contexto.textAlign = 'center';
                 contexto.textBaseline = 'middle';
-                
-                // Dibujar figura del Albañil con Carretilla (👷‍♂️ + 🛒)
                 contexto.fillText('👷‍♂️', this.x + 25, this.y + 30);
-                contexto.font = '40px sans-serif';
-                contexto.fillText('🛒', this.x + 60, this.y + 45);
+
+                contexto.font = '42px sans-serif';
+                contexto.fillText('🛒', this.x + 62, this.y + 45);
             }
         }
 
         // =========================================================================
-        // CLASE 2: Item
-        // Representa cada uno de los objetos que caen desde el cielo.
+        // CLASE 3: Item
+        // Modela cada objeto que cae por pantalla.
         // =========================================================================
         class Item {
-            // El CONSTRUCTOR recibe las coordenadas y el tipo de objeto aleatorio
-            constructor(canvasAncho, tipo) {
+            constructor(canvasAncho, datosItem, velocidadBase) {
                 this.canvasAncho = canvasAncho;
-                this.tipo = tipo; // Guarda si es válido, el emoji, etc.
+                this.datos = datosItem;
 
-                this.tamano = 36;
+                this.tamano = 38;
                 this.x = Math.random() * (this.canvasAncho - this.tamano * 2) + this.tamano;
-                this.y = -this.tamano; // Empieza arriba fuera de pantalla
+                this.y = -this.tamano;
 
-                // Velocidad aleatoria de caída entre 2 y 5
-                this.velocidadY = Math.random() * 3 + 2.5;
+                // La velocidad varía según la dificultad seleccionada
+                this.velocidadY = velocidadBase + (Math.random() * 2);
             }
 
-            // MÉTODO: Mueve el objeto hacia abajo
             actualizar() {
                 this.y += this.velocidadY;
             }
 
-            // MÉTODO: Dibuja el objeto en el Canvas
             dibujar(contexto) {
                 contexto.font = `${this.tamano}px sans-serif`;
                 contexto.textAlign = 'center';
                 contexto.textBaseline = 'middle';
-                contexto.fillText(this.tipo.emoji, this.x, this.y);
+                contexto.fillText(this.datos.emoji, this.x, this.y);
             }
 
-            // MÉTODO: Verifica si el ítem tocó el suelo (salió de la pantalla)
             tocoSuelo(canvasAlto) {
                 return this.y - this.tamano > canvasAlto;
             }
         }
 
         // =========================================================================
-        // CLASE 3: Juego
-        // Administra todo el flujo: puntos, vidas, lista de ítems, bucle principal.
+        // CLASE 4: Juego
+        // Administrador global de estado, Game Loop, misiones y dificultades.
         // =========================================================================
         class Juego {
             constructor() {
-                // Instancia de la clase Albanil
                 this.albanil = new Albanil(ANCHO_CANVAS, ALTO_CANVAS);
-                
-                // Arreglo/Array para almacenar múltiples ítems cayendo
                 this.items = [];
-
-                // Variables de estado del juego
+                
                 this.puntos = 0;
                 this.vidas = 3;
                 this.estaJugando = false;
+                this.dificultadActual = 'NORMAL';
+
+                this.misionActual = null;
+                this.indiceMision = 0;
+
                 this.intervaloGenerador = null;
                 this.idAnimacion = null;
 
-                // Configurar escuchadores de eventos
+                // Parámetros por Dificultad
+                this.configDificultad = {
+                    FACIL: { velocidad: 3.0, tiempoSpawn: 1100, texto: 'FÁCIL' },
+                    NORMAL: { velocidad: 4.5, tiempoSpawn: 850, texto: 'NORMAL' },
+                    DIFICIL: { velocidad: 6.5, tiempoSpawn: 550, texto: 'DIFÍCIL' }
+                };
+
                 this.configurarEventos();
             }
 
-            // MÉTODO: Inicia o reinicia la partida
+            // MÉTODO: Cambiar la dificultad desde la portada
+            setDificultad(nivel) {
+                if (this.configDificultad[nivel]) {
+                    this.dificultadActual = nivel;
+                    txtModo.innerText = this.configDificultad[nivel].texto;
+                }
+            }
+
+            // MÉTODO: Iniciar nueva partida
             iniciar() {
                 this.puntos = 0;
                 this.vidas = 3;
                 this.items = [];
+                this.indiceMision = 0;
                 this.estaJugando = true;
 
                 this.albanil.resetear();
+                this.cargarNuevaMision();
                 this.actualizarHUD();
 
-                // Ocultar pantallas secundarias
                 pantallaInicio.classList.add('hidden');
                 pantallaGameOver.classList.add('hidden');
 
-                // Limpiar intervalos antiguos si existían
+                const cfg = this.configDificultad[this.dificultadActual];
+
+                // Limpiar intervalos previos
                 if (this.intervaloGenerador) clearInterval(this.intervaloGenerador);
 
-                // Generar un nuevo ítem cada 900 milisegundos (0.9 seg)
+                // Spawner de objetos
                 this.intervaloGenerador = setInterval(() => {
                     if (this.estaJugando) {
                         this.generarItem();
                     }
-                }, 900);
+                }, cfg.tiempoSpawn);
 
-                // Iniciar el Game Loop (Bucle de Animación)
                 if (this.idAnimacion) cancelAnimationFrame(this.idAnimacion);
                 this.gameLoop();
             }
 
-            // MÉTODO: Genera una instancia aleatoria de Item y la agrega al arreglo
-            generarItem() {
-                // Elegir un tipo de ítem al azar del arreglo TIPOS_ITEMS
-                const indiceAleatorio = Math.floor(Math.random() * TIPOS_ITEMS.length);
-                const tipoSeleccionado = TIPOS_ITEMS[indiceAleatorio];
-
-                // Crear el objeto y añadirlo al arreglo
-                const nuevoItem = new Item(ANCHO_CANVAS, tipoSeleccionado);
-                this.items.push(nuevoItem);
+            // MÉTODO: Pasa a la siguiente misión
+            cargarNuevaMision() {
+                const creadorMision = LISTA_MISIONES[this.indiceMision % LISTA_MISIONES.length];
+                this.misionActual = creadorMision();
+                this.indiceMision++;
+                this.actualizarHUD();
             }
 
-            // MÉTODO: Detección de Colisión (AABB: Axis-Aligned Bounding Box)
-            // Compara si la posición del ítem se cruza con la carretilla del albañil
+            // MÉTODO: Genera ítems considerando una mezcla entre pedidos y basura
+            generarItem() {
+                const keys = Object.keys(CATALOGO_ITEMS);
+                let itemElegido;
+
+                // Probabilidad de 50% para generar materiales de la misión actual
+                if (Math.random() < 0.5 && this.misionActual) {
+                    const materialId = this.misionActual.materialesSolicitados[
+                        Math.floor(Math.random() * this.misionActual.materialesSolicitados.length)
+                    ];
+                    itemElegido = CATALOGO_ITEMS[materialId];
+                } else {
+                    // Genera cualquier ítem al azar del catálogo
+                    const randomKey = keys[Math.floor(Math.random() * keys.length)];
+                    itemElegido = CATALOGO_ITEMS[randomKey];
+                }
+
+                const velBase = this.configDificultad[this.dificultadActual].velocidad;
+                this.items.push(new Item(ANCHO_CANVAS, itemElegido, velBase));
+            }
+
+            // MÉTODO: Evaluador de colisión (Carretilla vs Objeto)
             detectarColision(albanil, item) {
-                // Zona de recolección (la carretilla)
-                const zonaCarretilla = {
+                const cajaCarretilla = {
                     x: albanil.x + 35,
                     y: albanil.y + 20,
                     ancho: 55,
@@ -340,198 +455,203 @@
                 };
 
                 return (
-                    item.x + 15 > zonaCarretilla.x &&
-                    item.x - 15 < zonaCarretilla.x + zonaCarretilla.ancho &&
-                    item.y + 15 > zonaCarretilla.y &&
-                    item.y - 15 < zonaCarretilla.y + zonaCarretilla.alto
+                    item.x + 15 > cajaCarretilla.x &&
+                    item.x - 15 < cajaCarretilla.x + cajaCarretilla.ancho &&
+                    item.y + 15 > cajaCarretilla.y &&
+                    item.y - 15 < cajaCarretilla.y + cajaCarretilla.alto
                 );
             }
 
-            // MÉTODO: BUCLE PRINCIPAL DE JUEGO (GAME LOOP)
-            // Se ejecuta ~60 veces por segundo usando requestAnimationFrame
+            // MÉTODO: Bucle Principal de Render y Lógica (Game Loop)
             gameLoop() {
                 if (!this.estaJugando) return;
 
-                // 1. Limpiar pantalla en cada fotograma
+                // 1. Limpiar pantalla
                 ctx.clearRect(0, 0, ANCHO_CANVAS, ALTO_CANVAS);
 
-                // 2. Dibujar Fondo de la Construcción
-                this.dibujarFondo();
+                // 2. Dibujar Escenario de Obra
+                this.dibujarEscenario();
 
-                // 3. Actualizar y dibujar al jugador
+                // 3. Actualizar Jugador
                 this.albanil.actualizar();
                 this.albanil.dibujar(ctx);
 
-                // 4. Recorrer el arreglo de ítems (de atrás hacia adelante para poder borrar sin fallar)
+                // 4. Iterar Arreglo de Ítems
                 for (let i = this.items.length - 1; i >= 0; i--) {
                     const item = this.items[i];
-                    
                     item.actualizar();
                     item.dibujar(ctx);
 
-                    // A) Revisa si el jugador atrapó el ítem
+                    // A) Si el jugador lo atrapa
                     if (this.detectarColision(this.albanil, item)) {
-                        if (item.tipo.esValido) {
-                            // ¡Buena recolección!
-                            this.puntos += item.tipo.puntos;
-                        } else {
-                            // ¡Atrapó basura!
-                            this.vidas--;
-                            this.puntos = Math.max(0, this.puntos + item.tipo.puntos);
-                        }
-                        
-                        this.actualizarHUD();
-                        this.items.splice(i, 1); // Eliminar ítem atrapado
+                        this.procesarItemRecolectado(item.datos);
+                        this.items.splice(i, 1);
                         continue;
                     }
 
-                    // B) Revisa si el ítem tocó el suelo sin ser atrapado
+                    // B) Si toca el suelo
                     if (item.tocoSuelo(ALTO_CANVAS)) {
-                        // Si se le cayó un material válido, pierde 1 vida
-                        if (item.tipo.esValido) {
+                        // Si se cayó un material que el ingeniero HABÍA PEDIDO, quita vida
+                        if (this.misionActual.esMaterialCorrecto(item.datos.id)) {
                             this.vidas--;
                             this.actualizarHUD();
                         }
-                        this.items.splice(i, 1); // Eliminar ítem caído
+                        this.items.splice(i, 1);
                     }
                 }
 
-                // 5. Verificar si el jugador perdió todas las vidas
+                // 5. Condición de Game Over
                 if (this.vidas <= 0) {
-                    this.terminar();
+                    this.terminar("Perdiste todas las vidas por juntar basura o dejar caer materiales de la misión.");
                     return;
                 }
 
-                // 6. Solicitar el siguiente fotograma
+                // 6. Siguiente Frame
                 this.idAnimacion = requestAnimationFrame(() => this.gameLoop());
             }
 
-            // MÉTODO: Dibuja el escenario de construcción de fondo
-            dibujarFondo() {
+            // MÉTODO: Aplica reglas de puntos o penalización al atrapar un objeto
+            procesarItemRecolectado(datosItem) {
+                // Si es un material que el Ingeniero pidió en la Misión Actual
+                if (this.misionActual.esMaterialCorrecto(datosItem.id)) {
+                    this.puntos += 150;
+                    this.misionActual.registrarAcierto();
+
+                    // ¿Misión Completada?
+                    if (this.misionActual.estaCompletada()) {
+                        this.puntos += 300; // Bono por misión
+                        this.cargarNuevaMision();
+                    }
+                } else {
+                    // Si juntó basura o un material equivocado
+                    this.puntos = Math.max(0, this.puntos - 50);
+                    this.vidas--;
+                }
+
+                this.actualizarHUD();
+            }
+
+            // MÉTODO: Dibuja fondo con temáticas de obra
+            dibujarEscenario() {
                 // Cielo
-                ctx.fillStyle = '#38bdf8';
+                ctx.fillStyle = '#0284c7';
                 ctx.fillRect(0, 0, ANCHO_CANVAS, ALTO_CANVAS);
 
                 // Sol
-                ctx.fillStyle = '#fde047';
+                ctx.fillStyle = '#facc15';
                 ctx.beginPath();
-                ctx.arc(720, 60, 35, 0, Math.PI * 2);
+                ctx.arc(720, 65, 30, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Nubes
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.beginPath();
-                ctx.arc(150, 70, 25, 0, Math.PI * 2);
-                ctx.arc(180, 60, 35, 0, Math.PI * 2);
-                ctx.arc(210, 70, 25, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Edificio en construcción (Fondo)
-                ctx.fillStyle = '#94a3b8';
-                ctx.fillRect(80, 150, 160, 220);
-                // Ventanas en construcción
-                ctx.fillStyle = '#334155';
-                for (let fila = 0; fila < 3; fila++) {
-                    for (let col = 0; col < 2; col++) {
-                        ctx.fillRect(100 + col * 70, 180 + fila * 60, 40, 45);
-                    }
+                // Edificio en construcción de fondo
+                ctx.fillStyle = '#64748b';
+                ctx.fillRect(60, 140, 180, 240);
+                
+                // Vigas rojas
+                ctx.fillStyle = '#dc2626';
+                for (let i = 0; i < 4; i++) {
+                    ctx.fillRect(60, 140 + (i * 60), 180, 8);
                 }
 
-                // Grúa de construcción
-                ctx.strokeStyle = '#f59e0b';
-                ctx.lineWidth = 6;
+                // Grúa
+                ctx.strokeStyle = '#eab308';
+                ctx.lineWidth = 5;
                 ctx.beginPath();
-                ctx.moveTo(550, 370);
-                ctx.lineTo(550, 80);
-                ctx.lineTo(680, 80);
+                ctx.moveTo(560, 380);
+                ctx.lineTo(560, 90);
+                ctx.lineTo(700, 90);
                 ctx.stroke();
 
-                // Cable de la grúa
-                ctx.strokeStyle = '#475569';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(650, 80);
-                ctx.lineTo(650, 140);
-                ctx.stroke();
-
-                // Suelo de tierra / obra
+                // Suelo de obra
                 ctx.fillStyle = '#78350f';
                 ctx.fillRect(0, ALTO_CANVAS - 20, ANCHO_CANVAS, 20);
-                ctx.fillStyle = '#a16207';
+                ctx.fillStyle = '#ca8a04';
                 ctx.fillRect(0, ALTO_CANVAS - 25, ANCHO_CANVAS, 5);
             }
 
-            // MÉTODO: Actualiza la interfaz de usuario (HTML)
+            // MÉTODO: Sincroniza las variables de estado con los elementos HTML del HUD
             actualizarHUD() {
                 txtPuntos.innerText = this.puntos;
-                
-                // Mostrar corazones según las vidas restantes
+
                 let corazones = '';
-                for (let i = 0; i < this.vidas; i++) {
-                    corazones += '❤️';
-                }
+                for (let i = 0; i < this.vidas; i++) corazones += '❤️';
                 txtVidas.innerText = corazones || '💀';
+
+                if (this.misionActual) {
+                    txtTituloMision.innerText = this.misionActual.titulo;
+                    txtDescripcionMision.innerText = this.misionActual.descripcion;
+                    txtProgresoMision.innerText = `${this.misionActual.actual}/${this.misionActual.meta}`;
+                    barraProgreso.style.width = `${this.misionActual.obtenerPorcentaje()}%`;
+                }
             }
 
-            // MÉTODO: Termina la partida
-            terminar() {
+            // MÉTODO: Finaliza la partida
+            terminar(motivo) {
                 this.estaJugando = false;
                 clearInterval(this.intervaloGenerador);
+                motivoGameOver.innerText = motivo;
                 puntajeFinal.innerText = this.puntos;
                 pantallaGameOver.classList.remove('hidden');
             }
 
-            // MÉTODO: Configura los controles (Teclado y botones táctiles)
+            // MÉTODO: Asigna eventos de teclado y touch
             configurarEventos() {
-                // Teclado Presionado (keydown)
                 window.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-                        this.albanil.moviendoIzquierda = true;
-                    }
-                    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-                        this.albanil.moviendoDerecha = true;
-                    }
+                    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.albanil.moviendoIzquierda = true;
+                    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.albanil.moviendoDerecha = true;
                 });
 
-                // Teclado Soltado (keyup)
                 window.addEventListener('keyup', (e) => {
-                    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-                        this.albanil.moviendoIzquierda = false;
-                    }
-                    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-                        this.albanil.moviendoDerecha = false;
-                    }
+                    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.albanil.moviendoIzquierda = false;
+                    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.albanil.moviendoDerecha = false;
                 });
 
-                // Botones Táctiles para Móvil
+                // Controles táctiles
                 const btnIzquierda = document.getElementById('btnIzquierda');
                 const btnDerecha = document.getElementById('btnDerecha');
 
-                const iniciarIzquierda = (e) => { e.preventDefault(); this.albanil.moviendoIzquierda = true; };
-                const detenerIzquierda = (e) => { e.preventDefault(); this.albanil.moviendoIzquierda = false; };
-                const iniciarDerecha = (e) => { e.preventDefault(); this.albanil.moviendoDerecha = true; };
-                const detenerDerecha = (e) => { e.preventDefault(); this.albanil.moviendoDerecha = false; };
+                const izqOn = (e) => { e.preventDefault(); this.albanil.moviendoIzquierda = true; };
+                const izqOff = (e) => { e.preventDefault(); this.albanil.moviendoIzquierda = false; };
+                const derOn = (e) => { e.preventDefault(); this.albanil.moviendoDerecha = true; };
+                const derOff = (e) => { e.preventDefault(); this.albanil.moviendoDerecha = false; };
 
-                btnIzquierda.addEventListener('touchstart', iniciarIzquierda);
-                btnIzquierda.addEventListener('touchend', detenerIzquierda);
-                btnIzquierda.addEventListener('mousedown', iniciarIzquierda);
-                btnIzquierda.addEventListener('mouseup', detenerIzquierda);
+                btnIzquierda.addEventListener('touchstart', izqOn);
+                btnIzquierda.addEventListener('touchend', izqOff);
+                btnIzquierda.addEventListener('mousedown', izqOn);
+                btnIzquierda.addEventListener('mouseup', izqOff);
 
-                btnDerecha.addEventListener('touchstart', iniciarDerecha);
-                btnDerecha.addEventListener('touchend', detenerDerecha);
-                btnDerecha.addEventListener('mousedown', iniciarDerecha);
-                btnDerecha.addEventListener('mouseup', detenerDerecha);
+                btnDerecha.addEventListener('touchstart', derOn);
+                btnDerecha.addEventListener('touchend', derOff);
+                btnDerecha.addEventListener('mousedown', derOn);
+                btnDerecha.addEventListener('mouseup', derOff);
             }
         }
 
-        // Instancia global del Juego
+        // Instancia principal del juego
         let juego;
 
         window.onload = () => {
-            // Se crea el objeto de la clase Juego cuando carga la página
             juego = new Juego();
 
-            // Eventos para los botones de las pantallas
+            // Configurar botones de dificultad en portada
+            const botonesDificultad = document.querySelectorAll('.btn-dificultad');
+            botonesDificultad.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    botonesDificultad.forEach(b => {
+                        b.classList.remove('bg-amber-500', 'text-slate-950', 'font-bold', 'border-amber-300');
+                        b.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+                    });
+
+                    const target = e.currentTarget;
+                    target.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+                    target.classList.add('bg-amber-500', 'text-slate-950', 'font-bold', 'border-amber-300');
+
+                    const dif = target.getAttribute('data-dificultad');
+                    juego.setDificultad(dif);
+                });
+            });
+
+            // Botones de inicio / reinicio
             btnIniciar.addEventListener('click', () => juego.iniciar());
             btnReiniciar.addEventListener('click', () => juego.iniciar());
         };
