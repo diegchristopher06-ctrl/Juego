@@ -106,6 +106,7 @@
             display: flex;
             gap: 10px;
             margin-top: 5px;
+            flex-wrap: wrap;
         }
 
         .target-badge {
@@ -246,7 +247,17 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // --- SPRITES SVG EN CODIFICACIÓN BASE64 (TODO DENTRO DEL CÓDIGO) ---
+        // --- CARGA DE IMÁGENES EXTERNAS ---
+        const imgFondo = new Image();
+        imgFondo.src = './img/fondo.jpg'; // Imagen del sitio de construcción[cite: 4]
+
+        const imgBalde = new Image();
+        imgBalde.src = './img/balde.png'; // Imagen del balde de agua[cite: 5]
+
+        const imgSheet = new Image();
+        imgSheet.src = './img/materiales.jpg'; // Lámina de materiales de construcción[cite: 6]
+
+        // --- SPRITE SVG PARA EL JUGADOR Y OBJETOS NO SOLICITADOS ---
         const SVGS = {
             albanil: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100">
                 <path d="M 30 50 L 95 50 L 80 80 L 35 80 Z" fill="#64748b" stroke="#334155" stroke-width="3"/>
@@ -261,40 +272,6 @@
                 <rect x="10" y="16" width="38" height="4" rx="2" fill="#eab308"/>
             </svg>`,
 
-            ladrillo: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
-                <rect x="5" y="12" width="40" height="26" rx="3" fill="#dc2626" stroke="#991b1b" stroke-width="2"/>
-                <rect x="9" y="17" width="8" height="6" fill="#7f1d1d"/>
-                <rect x="21" y="17" width="8" height="6" fill="#7f1d1d"/>
-                <rect x="33" y="17" width="8" height="6" fill="#7f1d1d"/>
-                <rect x="9" y="27" width="8" height="6" fill="#7f1d1d"/>
-                <rect x="21" y="27" width="8" height="6" fill="#7f1d1d"/>
-                <rect x="33" y="27" width="8" height="6" fill="#7f1d1d"/>
-            </svg>`,
-
-            cemento: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
-                <rect x="10" y="8" width="30" height="34" rx="4" fill="#94a3b8" stroke="#475569" stroke-width="2"/>
-                <rect x="14" y="16" width="22" height="18" fill="#f8fafc" rx="2"/>
-                <text x="25" y="28" font-size="8" font-weight="bold" text-anchor="middle" fill="#0f172a">CEM</text>
-            </svg>`,
-
-            agua: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
-                <path d="M 18 18 L 32 18 L 36 40 C 36 44, 14 44, 14 40 Z" fill="#38bdf8" stroke="#0284c7" stroke-width="2"/>
-                <rect x="20" y="10" width="10" height="8" rx="2" fill="#0284c7"/>
-            </svg>`,
-
-            grava: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
-                <circle cx="18" cy="22" r="9" fill="#64748b"/>
-                <circle cx="32" cy="20" r="10" fill="#475569"/>
-                <circle cx="25" cy="32" r="10" fill="#334155"/>
-            </svg>`,
-
-            varilla: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
-                <rect x="21" y="5" width="8" height="40" rx="2" fill="#475569"/>
-                <line x1="19" y1="12" x2="31" y2="12" stroke="#94a3b8" stroke-width="2"/>
-                <line x1="19" y1="22" x2="31" y2="22" stroke="#94a3b8" stroke-width="2"/>
-                <line x1="19" y1="32" x2="31" y2="32" stroke="#94a3b8" stroke-width="2"/>
-            </svg>`,
-
             platano: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
                 <path d="M 10 32 C 20 42, 38 35, 40 12 C 32 25, 20 28, 10 32 Z" fill="#facc15" stroke="#ca8a04" stroke-width="2"/>
             </svg>`,
@@ -305,22 +282,24 @@
             </svg>`
         };
 
-        // Convertidor de SVG a Objeto Image de JS
-        const IMAGENES = {};
+        const IMAGENES_SVG = {};
         for (let key in SVGS) {
             const img = new Image();
             img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(SVGS[key]);
-            IMAGENES[key] = img;
+            IMAGENES_SVG[key] = img;
         }
 
+        // --- DEFINICIÓN Y COORDENADAS DE RECORTE DE CADA MATERIAL (SPRITE SHEET) ---[cite: 6]
         const TIPOS_ITEMS = {
-            ladrillo: { nombre: 'Ladrillo', esMaterial: true },
-            cemento:  { nombre: 'Cemento',  esMaterial: true },
-            agua:     { nombre: 'Agua',     esMaterial: true },
-            grava:    { nombre: 'Grava',    esMaterial: true },
-            varilla:  { nombre: 'Varilla',  esMaterial: true },
-            platano:  { nombre: 'Plátano',  esMaterial: false },
-            botella:  { nombre: 'Botella',  esMaterial: false }
+            ladrillo: { nombre: 'Ladrillo', esMaterial: true, fuente: 'sheet', crop: { sx: 215, sy: 50, sw: 175, sh: 120 } },[cite: 6]
+            bloques:  { nombre: 'Bloque',   esMaterial: true, fuente: 'sheet', crop: { sx: 250, sy: 220, sw: 130, sh: 150 } },[cite: 6]
+            tubos:    { nombre: 'Varilla',  esMaterial: true, fuente: 'sheet', crop: { sx: 20,  sy: 250, sw: 200, sh: 100 } },[cite: 6]
+            arena:    { nombre: 'Arena',    esMaterial: true, fuente: 'sheet', crop: { sx: 220, sy: 420, sw: 180, sh: 160 } },[cite: 6]
+            grava:    { nombre: 'Grava',    esMaterial: true, fuente: 'sheet', crop: { sx: 410, sy: 425, sw: 180, sh: 150 } },[cite: 6]
+            madera:   { nombre: 'Madera',   esMaterial: true, fuente: 'sheet', crop: { sx: 20,  sy: 40,  sw: 170, sh: 130 } },[cite: 6]
+            agua:     { nombre: 'Agua',     esMaterial: true, fuente: 'balde' },[cite: 5]
+            platano:  { nombre: 'Plátano',  esMaterial: false, fuente: 'svg' },
+            botella:  { nombre: 'Botella',  esMaterial: false, fuente: 'svg' }
         };
 
         class Mision {
@@ -352,9 +331,9 @@
         }
 
         const LISTA_MISIONES = [
-            () => new Mision("¡Levantar Pared de Ladrillo!", { ladrillo: 4, cemento: 2 }),
-            () => new Mision("¡Preparar Mezcla de Concreto!", { cemento: 3, agua: 2, grava: 3 }),
-            () => new Mision("¡Cimentación de Columnas!", { varilla: 3, cemento: 3 })
+            () => new Mision("¡Pared de Ladrillo!", { ladrillo: 4, agua: 2 }),
+            () => new Mision("¡Mezcla de Concreto!", { bloques: 3, agua: 2, grava: 3 }),
+            () => new Mision("¡Estructura e Izaje!", { tubos: 3, madera: 2, arena: 2 })
         ];
 
         class Albanil {
@@ -364,7 +343,7 @@
                 this.ancho = 110;
                 this.alto = 90;
                 this.x = cw / 2 - this.ancho / 2;
-                this.y = ch - this.alto - 30;
+                this.y = ch - this.alto - 20;
                 this.velocidad = 9;
                 this.movLado = 0;
             }
@@ -385,7 +364,7 @@
             }
 
             dibujar(ctx) {
-                ctx.drawImage(IMAGENES.albanil, this.x, this.y, this.ancho, this.alto);
+                ctx.drawImage(IMAGENES_SVG.albanil, this.x, this.y, this.ancho, this.alto);
             }
         }
 
@@ -393,8 +372,8 @@
             constructor(cw, tipoClave, velocidad) {
                 this.tipoClave = tipoClave;
                 this.info = TIPOS_ITEMS[tipoClave];
-                this.ancho = 42;
-                this.alto = 42;
+                this.ancho = 50;
+                this.alto = 50;
                 this.x = Math.random() * (cw - this.ancho - 40) + 20;
                 this.y = -50;
                 this.velocidadY = velocidad;
@@ -409,9 +388,17 @@
             }
 
             dibujar(ctx) {
-                const img = IMAGENES[this.tipoClave];
-                if (img) {
-                    ctx.drawImage(img, this.x, this.y, this.ancho, this.alto);
+                if (this.info.fuente === 'sheet') {
+                    // Dibujar sub-recorte de la imagen de materiales[cite: 6]
+                    const c = this.info.crop;
+                    ctx.drawImage(imgSheet, c.sx, c.sy, c.sw, c.sh, this.x, this.y, this.ancho, this.alto);
+                } else if (this.info.fuente === 'balde') {
+                    // Dibujar balde de agua completo[cite: 5]
+                    ctx.drawImage(imgBalde, this.x, this.y, this.ancho, this.alto);
+                } else if (this.info.fuente === 'svg') {
+                    // Dibujar objeto SVG
+                    const img = IMAGENES_SVG[this.tipoClave];
+                    if (img) ctx.drawImage(img, this.x, this.y, this.ancho, this.alto);
                 }
             }
         }
@@ -582,14 +569,13 @@
             }
 
             dibujarEscenario() {
-                ctx.fillStyle = '#0284c7';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                ctx.fillStyle = '#334155';
-                ctx.fillRect(50, 120, 200, 420);
-
-                ctx.fillStyle = '#78350f';
-                ctx.fillRect(0, canvas.height - 30, canvas.width, 30);
+                // Dibujar imagen de la obra como fondo de pantalla[cite: 4]
+                if (imgFondo.complete && imgFondo.naturalWidth !== 0) {
+                    ctx.drawImage(imgFondo, 0, 0, canvas.width, canvas.height);[cite: 4]
+                } else {
+                    ctx.fillStyle = '#0284c7';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
             }
 
             loop() {
