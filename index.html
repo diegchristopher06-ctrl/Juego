@@ -247,17 +247,15 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // --- CARGA Y CONTROL DE ERRORES DE IMÁGENES EXTERNAS ---
         const imgFondo = new Image();
-        imgFondo.src = './img/fondo.jpg';[cite: 4]
+        imgFondo.src = './img/fondo.jpg';
 
         const imgBalde = new Image();
-        imgBalde.src = './img/balde.png';[cite: 5]
+        imgBalde.src = './img/balde.png';
 
         const imgSheet = new Image();
-        imgSheet.src = './img/materiales.jpg';[cite: 6]
+        imgSheet.src = './img/materiales.jpg';
 
-        // --- SPRITE SVG PARA EL JUGADOR Y OBJETOS NO SOLICITADOS ---
         const SVGS = {
             albanil: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100">
                 <path d="M 30 50 L 95 50 L 80 80 L 35 80 Z" fill="#64748b" stroke="#334155" stroke-width="3"/>
@@ -289,15 +287,14 @@
             IMAGENES_SVG[key] = img;
         }
 
-        // --- DEFINICIÓN DE COORDENADAS EN LA LÁMINA ---
         const TIPOS_ITEMS = {
-            ladrillo: { nombre: 'Ladrillo', esMaterial: true, fuente: 'sheet', crop: { sx: 215, sy: 50, sw: 175, sh: 120 } },[cite: 6]
-            bloques:  { nombre: 'Bloque',   esMaterial: true, fuente: 'sheet', crop: { sx: 250, sy: 220, sw: 130, sh: 150 } },[cite: 6]
-            tubos:    { nombre: 'Varilla',  esMaterial: true, fuente: 'sheet', crop: { sx: 20,  sy: 250, sw: 200, sh: 100 } },[cite: 6]
-            arena:    { nombre: 'Arena',    esMaterial: true, fuente: 'sheet', crop: { sx: 220, sy: 420, sw: 180, sh: 160 } },[cite: 6]
-            grava:    { nombre: 'Grava',    esMaterial: true, fuente: 'sheet', crop: { sx: 410, sy: 425, sw: 180, sh: 150 } },[cite: 6]
-            madera:   { nombre: 'Madera',   esMaterial: true, fuente: 'sheet', crop: { sx: 20,  sy: 40,  sw: 170, sh: 130 } },[cite: 6]
-            agua:     { nombre: 'Agua',     esMaterial: true, fuente: 'balde' },[cite: 5]
+            ladrillo: { nombre: 'Ladrillo', esMaterial: true, fuente: 'sheet', crop: { sx: 215, sy: 50, sw: 175, sh: 120 } },
+            bloques:  { nombre: 'Bloque',   esMaterial: true, fuente: 'sheet', crop: { sx: 250, sy: 220, sw: 130, sh: 150 } },
+            tubos:    { nombre: 'Varilla',  esMaterial: true, fuente: 'sheet', crop: { sx: 20,  sy: 250, sw: 200, sh: 100 } },
+            arena:    { nombre: 'Arena',    esMaterial: true, fuente: 'sheet', crop: { sx: 220, sy: 420, sw: 180, sh: 160 } },
+            grava:    { nombre: 'Grava',    esMaterial: true, fuente: 'sheet', crop: { sx: 410, sy: 425, sw: 180, sh: 150 } },
+            madera:   { nombre: 'Madera',   esMaterial: true, fuente: 'sheet', crop: { sx: 20,  sy: 40,  sw: 170, sh: 130 } },
+            agua:     { nombre: 'Agua',     esMaterial: true, fuente: 'balde' },
             platano:  { nombre: 'Plátano',  esMaterial: false, fuente: 'svg' },
             botella:  { nombre: 'Botella',  esMaterial: false, fuente: 'svg' }
         };
@@ -391,15 +388,14 @@
                 if (this.info.fuente === 'sheet') {
                     if (imgSheet.complete && imgSheet.naturalWidth !== 0) {
                         const c = this.info.crop;
-                        ctx.drawImage(imgSheet, c.sx, c.sy, c.sw, c.sh, this.x, this.y, this.ancho, this.alto);[cite: 6]
+                        ctx.drawImage(imgSheet, c.sx, c.sy, c.sw, c.sh, this.x, this.y, this.ancho, this.alto);
                     } else {
-                        // Dibujar respaldo en caso de que no haya cargado la lámina
                         ctx.fillStyle = '#ea580c';
                         ctx.fillRect(this.x, this.y, this.ancho, this.alto);
                     }
                 } else if (this.info.fuente === 'balde') {
                     if (imgBalde.complete && imgBalde.naturalWidth !== 0) {
-                        ctx.drawImage(imgBalde, this.x, this.y, this.ancho, this.alto);[cite: 5]
+                        ctx.drawImage(imgBalde, this.x, this.y, this.ancho, this.alto);
                     } else {
                         ctx.fillStyle = '#38bdf8';
                         ctx.fillRect(this.x, this.y, this.ancho, this.alto);
@@ -578,9 +574,8 @@
 
             dibujarEscenario() {
                 if (imgFondo.complete && imgFondo.naturalWidth !== 0) {
-                    ctx.drawImage(imgFondo, 0, 0, canvas.width, canvas.height);[cite: 4]
+                    ctx.drawImage(imgFondo, 0, 0, canvas.width, canvas.height);
                 } else {
-                    // Respaldo visual si no ha cargado la imagen de fondo
                     ctx.fillStyle = '#1e293b';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                     ctx.fillStyle = '#334155';
